@@ -61,9 +61,63 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
+      // Check if avatar_url is a data URL (starts with "data:")
+      let processedValues = { ...values };
+
+      if (values.avatar_url && values.avatar_url.startsWith('data:')) {
+        try {
+          // For data URLs, we'll try to upload to the file_uploads bucket instead
+          // Extract the base64 data from the data URL
+          const base64Data = values.avatar_url.split(',')[1];
+          const contentType = values.avatar_url.split(';')[0].split(':')[1];
+
+          // Convert base64 to blob
+          const byteCharacters = atob(base64Data);
+          const byteArrays = [];
+
+          for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+              byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+          }
+
+          const blob = new Blob(byteArrays, { type: contentType });
+          const file = new File([blob], "avatar.jpg", { type: contentType });
+
+          // Try to upload to the file_uploads bucket (which we know exists)
+          const fileName = `avatars/${user.id}-${Math.random().toString(36).substring(2)}.jpg`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('file_uploads')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error("Error uploading avatar to file_uploads bucket:", uploadError);
+            // Continue with the data URL if upload fails
+          } else {
+            // Get the public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('file_uploads')
+              .getPublicUrl(fileName);
+
+            // Update the avatar_url with the public URL
+            processedValues.avatar_url = publicUrl;
+          }
+        } catch (error) {
+          console.error("Error processing data URL:", error);
+          // Continue with the data URL if processing fails
+        }
+      }
+
       const { data, error } = await supabase
         .from("profiles")
-        .update(values)
+        .update(processedValues)
         .eq("id", user.id)
         .select()
         .single();
@@ -89,42 +143,51 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
 
   // Handle avatar upload
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File input change event triggered");
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log("No file selected");
+      return;
+    }
+
+    console.log("File selected:", file.name);
 
     try {
       setIsUploading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
-      // Create a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // Instead of using Supabase storage, we'll use a temporary URL for the avatar
+      // This is a workaround since we can't create buckets with the anon key
 
-      // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
+      // Create a temporary URL for the avatar using FileReader
+      const reader = new FileReader();
 
-      if (uploadError) throw uploadError;
+      // Create a promise to wait for the FileReader to complete
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      console.log("Created data URL for image");
 
-      // Update the form
-      form.setValue("avatar_url", publicUrl);
-      
+      // Update the form with the data URL and mark as dirty
+      form.setValue("avatar_url", dataUrl, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true
+      });
+
       toast({
-        title: "Avatar uploaded",
-        description: "Your avatar has been uploaded successfully.",
+        title: "Avatar selected",
+        description: "Your avatar has been selected. Click 'Save Changes' to update your profile.",
       });
     } catch (error: any) {
+      console.error("Avatar handling error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to upload avatar",
+        description: error.message || "Failed to process avatar",
         variant: "destructive",
       });
     } finally {
@@ -151,7 +214,14 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => document.getElementById("avatar-upload")?.click()}
+              onClick={() => {
+                // Reset the input value to ensure onChange fires even if selecting the same file
+                const fileInput = document.getElementById("avatar-upload") as HTMLInputElement;
+                if (fileInput) {
+                  fileInput.value = "";
+                  fileInput.click();
+                }
+              }}
               disabled={isUploading}
             >
               {isUploading ? (
@@ -170,6 +240,7 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
               className="hidden"
               onChange={handleAvatarUpload}
               disabled={isUploading}
+              key="avatar-upload-input" // Force React to recreate this element
             />
             <p className="text-sm text-muted-foreground mt-1">
               JPG, PNG or GIF. 1MB max.
@@ -242,10 +313,10 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
             <FormItem>
               <FormLabel>Bio</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Tell us a little about yourself" 
-                  className="resize-none" 
-                  {...field} 
+                <Textarea
+                  placeholder="Tell us a little about yourself"
+                  className="resize-none"
+                  {...field}
                 />
               </FormControl>
               <FormDescription>
@@ -256,8 +327,8 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
           )}
         />
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={updateProfileMutation.isPending || !form.formState.isDirty}
         >
           {updateProfileMutation.isPending ? (

@@ -9,8 +9,6 @@ import { Loader2 } from "lucide-react";
 // Import settings components
 import { ProfileSettingsForm } from "@/components/settings/ProfileSettingsForm";
 import { AccountSettingsForm } from "@/components/settings/AccountSettingsForm";
-import { NotificationSettingsForm } from "@/components/settings/NotificationSettingsForm";
-import { AppearanceSettingsForm } from "@/components/settings/AppearanceSettingsForm";
 import { SecuritySettingsForm } from "@/components/settings/SecuritySettingsForm";
 
 export default function Settings() {
@@ -20,16 +18,36 @@ export default function Settings() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['user-profile'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get the authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
       if (!user) return null;
 
-      const { data } = await supabase
+      // Get the user's email from auth
+      const userEmail = user.email;
+
+      // Get the user's profile data
+      const { data, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
-      return data;
-    }
+
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        // Return a minimal profile with just the user ID and email
+        return {
+          id: user.id,
+          email: userEmail,
+          full_name: user.user_metadata?.full_name || ""
+        };
+      }
+
+      // Ensure the profile has the user's email
+      return { ...data, email: userEmail };
+    },
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   // Handle tab change
@@ -52,8 +70,18 @@ export default function Settings() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-1">Manage your account settings and preferences</p>
+        </div>
+
+        <div className="flex items-center justify-center h-[calc(100vh-300px)]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading your settings...</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -69,8 +97,6 @@ export default function Settings() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
@@ -86,22 +112,6 @@ export default function Settings() {
           <Card>
             <CardContent className="pt-6">
               <AccountSettingsForm profile={profile} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <NotificationSettingsForm profile={profile} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appearance" className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <AppearanceSettingsForm profile={profile} />
             </CardContent>
           </Card>
         </TabsContent>
