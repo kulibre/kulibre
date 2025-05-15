@@ -10,17 +10,17 @@ export default function Privacy() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 md:px-6">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-creatively-purple rounded-lg w-8 h-8 flex items-center justify-center">
-              <span className="text-white font-bold">C</span>
+            <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
+              <span className="text-white font-bold">K</span>
             </div>
-            <h1 className="text-xl font-bold">Creatively</h1>
+            <h1 className="text-xl font-bold">kulibre</h1>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-sm font-medium hover:text-creatively-purple transition-colors">Home</Link>
-            <Link to="/about" className="text-sm font-medium hover:text-creatively-purple transition-colors">About</Link>
-            <Link to="/careers" className="text-sm font-medium hover:text-creatively-purple transition-colors">Careers</Link>
-            <Link to="/blog" className="text-sm font-medium hover:text-creatively-purple transition-colors">Blog</Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-creatively-purple transition-colors">Contact</Link>
+            <Link to="/" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Home</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-kulibre-purple transition-colors">About</Link>
+            <Link to="/careers" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Careers</Link>
+            <Link to="/blog" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Blog</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Contact</Link>
           </nav>
           <div className="flex items-center space-x-4">
             <Link to="/login">
@@ -35,10 +35,10 @@ export default function Privacy() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 md:py-24 bg-gradient-to-b from-creatively-purple/5 to-white">
+        <section className="py-20 md:py-24 bg-gradient-to-b from-kulibre-purple/5 to-white">
           <div className="container mx-auto px-4 text-center">
-            <div className="mx-auto mb-6 bg-creatively-purple/10 w-16 h-16 rounded-full flex items-center justify-center">
-              <Shield className="text-creatively-purple w-8 h-8" />
+            <div className="mx-auto mb-6 bg-kulibre-purple/10 w-16 h-16 rounded-full flex items-center justify-center">
+              <Shield className="text-kulibre-purple w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
               Privacy Policy
@@ -54,7 +54,7 @@ export default function Privacy() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto prose prose-lg">
               <p className="lead">
-                At Creatively, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.
+                At kulibre, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.
               </p>
 
               <h2>Information We Collect</h2>
@@ -89,7 +89,7 @@ export default function Privacy() {
                 <li>Respond to your comments, questions, and requests and provide customer service</li>
                 <li>Communicate with you about products, services, offers, promotions, and events, and provide other news or information about us and our partners</li>
                 <li>Monitor and analyze trends, usage, and activities in connection with our platform</li>
-                <li>Detect, investigate, and prevent fraudulent transactions and other illegal activities and protect the rights and property of Creatively and others</li>
+                <li>Detect, investigate, and prevent fraudulent transactions and other illegal activities and protect the rights and property of kulibre and others</li>
                 <li>Personalize and improve the platform and provide content, features, or advertisements that match your interests and preferences</li>
               </ul>
 
@@ -101,7 +101,7 @@ export default function Privacy() {
                 <li>With vendors, consultants, and other service providers who need access to such information to carry out work on our behalf</li>
                 <li>With other users of the platform with whom you choose to share your content and information</li>
                 <li>In response to a request for information if we believe disclosure is in accordance with, or required by, any applicable law, regulation, or legal process</li>
-                <li>If we believe your actions are inconsistent with our user agreements or policies, or to protect the rights, property, and safety of Creatively or others</li>
+                <li>If we believe your actions are inconsistent with our user agreements or policies, or to protect the rights, property, and safety of kulibre or others</li>
                 <li>In connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business by another company</li>
                 <li>With your consent or at your direction</li>
               </ul>
@@ -129,7 +129,7 @@ export default function Privacy() {
 
               <h2>International Data Transfers</h2>
               <p>
-                We are based in the United States and the information we collect is governed by U.S. law. If you are accessing the platform from outside of the U.S., please be aware that information collected through the platform may be transferred to, processed, stored, and used in the U.S. and other jurisdictions. Data protection laws in the U.S. and other jurisdictions may be different from those of your country of residence. Your use of the platform or provision of any information therefore constitutes your consent to the transfer to and from, processing, usage, sharing, and storage of information about you in the U.S. and other jurisdictions as set out in this Privacy Policy.
+                We are based in Pakistan and the information we collect is governed by Pakistani law. If you are accessing the platform from outside of Pakistan, please be aware that information collected through the platform may be transferred to, processed, stored, and used in Pakistan and other jurisdictions. Data protection laws in Pakistan and other jurisdictions may be different from those of your country of residence. Your use of the platform or provision of any information therefore constitutes your consent to the transfer to and from, processing, usage, sharing, and storage of information about you in Pakistan and other jurisdictions as set out in this Privacy Policy.
               </p>
 
               <h2>Children's Privacy</h2>
@@ -147,18 +147,18 @@ export default function Privacy() {
                 If you have any questions about this Privacy Policy, please contact us at:
               </p>
               <p>
-                Creatively, Inc.<br />
-                123 Creative Way<br />
-                San Francisco, CA 94103<br />
-                privacy@creatively.com<br />
-                (800) 123-4567
+                kulibre<br />
+                L-377, Sector-4, North Karachi<br />
+                Karachi, Pakistan<br />
+                kulibre@gmail.com<br />
+                +92 3243037082
               </p>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-12 bg-creatively-gray">
+        <section className="py-12 bg-kulibre-gray">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-2xl font-bold mb-4">Have Questions About Our Privacy Practices?</h2>
             <p className="text-lg mb-8 max-w-2xl mx-auto text-muted-foreground">
@@ -222,13 +222,13 @@ export default function Privacy() {
           </div>
           <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="bg-creatively-purple rounded-lg w-8 h-8 flex items-center justify-center">
-                <span className="text-white font-bold">C</span>
+              <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
+                <span className="text-white font-bold">K</span>
               </div>
-              <span className="font-bold">Creatively</span>
+              <span className="font-bold">kulibre</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Creatively. All rights reserved.
+              © {new Date().getFullYear()} kulibre. All rights reserved.
             </p>
           </div>
         </div>

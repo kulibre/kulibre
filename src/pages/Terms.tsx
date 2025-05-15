@@ -10,17 +10,17 @@ export default function Terms() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 md:px-6">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-creatively-purple rounded-lg w-8 h-8 flex items-center justify-center">
-              <span className="text-white font-bold">C</span>
+            <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
+              <span className="text-white font-bold">K</span>
             </div>
-            <h1 className="text-xl font-bold">Creatively</h1>
+            <h1 className="text-xl font-bold">kulibre</h1>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-sm font-medium hover:text-creatively-purple transition-colors">Home</Link>
-            <Link to="/about" className="text-sm font-medium hover:text-creatively-purple transition-colors">About</Link>
-            <Link to="/careers" className="text-sm font-medium hover:text-creatively-purple transition-colors">Careers</Link>
-            <Link to="/blog" className="text-sm font-medium hover:text-creatively-purple transition-colors">Blog</Link>
-            <Link to="/contact" className="text-sm font-medium hover:text-creatively-purple transition-colors">Contact</Link>
+            <Link to="/" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Home</Link>
+            <Link to="/about" className="text-sm font-medium hover:text-kulibre-purple transition-colors">About</Link>
+            <Link to="/careers" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Careers</Link>
+            <Link to="/blog" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Blog</Link>
+            <Link to="/contact" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Contact</Link>
           </nav>
           <div className="flex items-center space-x-4">
             <Link to="/login">
@@ -35,10 +35,10 @@ export default function Terms() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 md:py-24 bg-gradient-to-b from-creatively-purple/5 to-white">
+        <section className="py-20 md:py-24 bg-gradient-to-b from-kulibre-purple/5 to-white">
           <div className="container mx-auto px-4 text-center">
-            <div className="mx-auto mb-6 bg-creatively-purple/10 w-16 h-16 rounded-full flex items-center justify-center">
-              <FileText className="text-creatively-purple w-8 h-8" />
+            <div className="mx-auto mb-6 bg-kulibre-purple/10 w-16 h-16 rounded-full flex items-center justify-center">
+              <FileText className="text-kulibre-purple w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
               Terms of Service
@@ -54,12 +54,12 @@ export default function Terms() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto prose prose-lg">
               <p className="lead">
-                Welcome to Creatively. Please read these Terms of Service ("Terms") carefully as they contain important information about your legal rights, remedies, and obligations. By accessing or using the Creatively platform, you agree to comply with and be bound by these Terms.
+                Welcome to kulibre. Please read these Terms of Service ("Terms") carefully as they contain important information about your legal rights, remedies, and obligations. By accessing or using the kulibre platform, you agree to comply with and be bound by these Terms.
               </p>
 
               <h2>1. Acceptance of Terms</h2>
               <p>
-                By registering for and/or using the Service in any manner, you agree to these Terms and all other operating rules, policies, and procedures that may be published by Creatively from time to time. These Terms apply to all visitors, users, and others who access the Service.
+                By registering for and/or using the Service in any manner, you agree to these Terms and all other operating rules, policies, and procedures that may be published by kulibre from time to time. These Terms apply to all visitors, users, and others who access the Service.
               </p>
 
               <h2>2. Changes to Terms</h2>
@@ -113,7 +113,7 @@ export default function Terms() {
 
               <h2>7. Intellectual Property Rights</h2>
               <p>
-                The Service and its original content (excluding User Content), features, and functionality are and will remain the exclusive property of Creatively and its licensors. The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Creatively.
+                The Service and its original content (excluding User Content), features, and functionality are and will remain the exclusive property of kulibre and its licensors. The Service is protected by copyright, trademark, and other laws of both Pakistan and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of kulibre.
               </p>
 
               <h2>8. Prohibited Uses</h2>
@@ -123,8 +123,8 @@ export default function Terms() {
               <ul>
                 <li>In any way that violates any applicable federal, state, local, or international law or regulation</li>
                 <li>To transmit, or procure the sending of, any advertising or promotional material, including any "junk mail," "chain letter," "spam," or any other similar solicitation</li>
-                <li>To impersonate or attempt to impersonate Creatively, a Creatively employee, another user, or any other person or entity</li>
-                <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Service, or which, as determined by us, may harm Creatively or users of the Service or expose them to liability</li>
+                <li>To impersonate or attempt to impersonate kulibre, a kulibre employee, another user, or any other person or entity</li>
+                <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Service, or which, as determined by us, may harm kulibre or users of the Service or expose them to liability</li>
               </ul>
 
               <h2>9. Termination</h2>
@@ -137,7 +137,7 @@ export default function Terms() {
 
               <h2>10. Limitation of Liability</h2>
               <p>
-                In no event shall Creatively, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
+                In no event shall kulibre, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
               </p>
               <ul>
                 <li>Your access to or use of or inability to access or use the Service</li>
@@ -154,7 +154,7 @@ export default function Terms() {
                 Your use of the Service is at your sole risk. The Service is provided on an "AS IS" and "AS AVAILABLE" basis. The Service is provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance.
               </p>
               <p>
-                Creatively, its subsidiaries, affiliates, and its licensors do not warrant that:
+                kulibre, its subsidiaries, affiliates, and its licensors do not warrant that:
               </p>
               <ul>
                 <li>The Service will function uninterrupted, secure, or available at any particular time or location</li>
@@ -165,12 +165,12 @@ export default function Terms() {
 
               <h2>12. Governing Law</h2>
               <p>
-                These Terms shall be governed and construed in accordance with the laws of the State of California, United States, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect.
+                These Terms shall be governed and construed in accordance with the laws of Pakistan, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect.
               </p>
 
               <h2>13. Dispute Resolution</h2>
               <p>
-                Any disputes arising out of or related to these Terms or the Service shall be resolved through binding arbitration in San Francisco, California, in accordance with the rules of the American Arbitration Association. The decision of the arbitrator shall be final and binding, and judgment on the award rendered by the arbitrator may be entered in any court having jurisdiction thereof.
+                Any disputes arising out of or related to these Terms or the Service shall be resolved through binding arbitration in Karachi, Pakistan, in accordance with the laws of Pakistan. The decision of the arbitrator shall be final and binding, and judgment on the award rendered by the arbitrator may be entered in any court having jurisdiction thereof.
               </p>
 
               <h2>14. Contact Us</h2>
@@ -178,18 +178,18 @@ export default function Terms() {
                 If you have any questions about these Terms, please contact us at:
               </p>
               <p>
-                Creatively, Inc.<br />
-                123 Creative Way<br />
-                San Francisco, CA 94103<br />
-                legal@creatively.com<br />
-                (800) 123-4567
+                kulibre<br />
+                L-377, Sector-4, North Karachi<br />
+                Karachi, Pakistan<br />
+                kulibre@gmail.com<br />
+                +92 3243037082
               </p>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="py-12 bg-creatively-gray">
+        <section className="py-12 bg-kulibre-gray">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-2xl font-bold mb-4">Have Questions About Our Terms?</h2>
             <p className="text-lg mb-8 max-w-2xl mx-auto text-muted-foreground">
@@ -253,13 +253,13 @@ export default function Terms() {
           </div>
           <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="bg-creatively-purple rounded-lg w-8 h-8 flex items-center justify-center">
-                <span className="text-white font-bold">C</span>
+              <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
+                <span className="text-white font-bold">K</span>
               </div>
-              <span className="font-bold">Creatively</span>
+              <span className="font-bold">kulibre</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Creatively. All rights reserved.
+              © {new Date().getFullYear()} kulibre. All rights reserved.
             </p>
           </div>
         </div>
