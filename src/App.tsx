@@ -40,6 +40,7 @@ import FAQ from "./pages/FAQ";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Security from "./pages/Security";
+import RefundPolicy from "./pages/RefundPolicy";
 
 export default function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/security" element={<Security />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
 
             <Route path="/dashboard" element={<Layout><Index /></Layout>} />
             <Route path="/projects" element={<Layout><ProjectsPageSimple /></Layout>} />

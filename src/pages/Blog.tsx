@@ -121,21 +121,21 @@ export default function Blog() {
               <p className="text-xl text-muted-foreground mb-8 text-center">
                 Insights, tips, and stories about creative project management and agency life.
               </p>
-              
+
               {/* Search and Filter */}
               <div className="flex flex-col md:flex-row gap-4 mb-12">
                 <div className="relative flex-grow">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search articles..." 
+                  <Input
+                    placeholder="Search articles..."
                     className="pl-10"
                   />
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
                   {categories.map((category, index) => (
-                    <Button 
-                      key={index} 
-                      variant={index === 0 ? "default" : "outline"} 
+                    <Button
+                      key={index}
+                      variant={index === 0 ? "default" : "outline"}
                       size="sm"
                       className="whitespace-nowrap"
                     >
@@ -153,8 +153,8 @@ export default function Blog() {
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <div className="relative rounded-xl overflow-hidden">
-                <img 
-                  src={blogPosts[0].image} 
+                <img
+                  src={blogPosts[0].image}
                   alt={blogPosts[0].title}
                   className="w-full h-[400px] object-cover"
                 />
@@ -190,8 +190,8 @@ export default function Blog() {
                 {blogPosts.slice(1).map(post => (
                   <Card key={post.id} className="overflow-hidden h-full flex flex-col">
                     <div className="h-48 overflow-hidden">
-                      <img 
-                        src={post.image} 
+                      <img
+                        src={post.image}
                         alt={post.title}
                         className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                       />
@@ -221,7 +221,7 @@ export default function Blog() {
                   </Card>
                 ))}
               </div>
-              
+
               {/* Load More Button */}
               <div className="mt-12 text-center">
                 <Button variant="outline" size="lg">
@@ -241,8 +241,8 @@ export default function Blog() {
                 Get the latest articles, resources, and insights about creative project management delivered to your inbox.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                <Input 
-                  placeholder="Enter your email" 
+                <Input
+                  placeholder="Enter your email"
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus-visible:ring-white"
                 />
                 <Button variant="secondary">
@@ -290,6 +290,7 @@ export default function Blog() {
               <ul className="space-y-2">
                 <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link></li>
                 <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground">Terms</Link></li>
+                <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground">Refund Policy</Link></li>
                 <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground">Security</Link></li>
               </ul>
             </div>

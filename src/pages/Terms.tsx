@@ -247,6 +247,7 @@ export default function Terms() {
               <ul className="space-y-2">
                 <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link></li>
                 <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground font-medium">Terms</Link></li>
+                <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground">Refund Policy</Link></li>
                 <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground">Security</Link></li>
               </ul>
             </div>

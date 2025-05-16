@@ -3,21 +3,21 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  Card, 
-  CardContent 
+import {
+  Card,
+  CardContent
 } from '@/components/ui/card';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  Mail,
+  Phone,
+  MapPin,
   MessageSquare,
   Clock,
   CheckCircle
@@ -30,7 +30,7 @@ export default function Contact() {
     e.preventDefault();
     // In a real application, you would handle the form submission here
     setFormSubmitted(true);
-    
+
     // Reset form after 3 seconds
     setTimeout(() => {
       setFormSubmitted(false);
@@ -87,7 +87,7 @@ export default function Contact() {
                 {/* Contact Information */}
                 <div className="lg:col-span-1">
                   <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
-                  
+
                   <div className="space-y-6">
                     <Card>
                       <CardContent className="p-6 flex items-start gap-4">
@@ -107,7 +107,7 @@ export default function Contact() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-6 flex items-start gap-4">
                         <div className="bg-creatively-purple/10 p-3 rounded-full">
@@ -122,7 +122,7 @@ export default function Contact() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-6 flex items-start gap-4">
                         <div className="bg-creatively-purple/10 p-3 rounded-full">
@@ -140,7 +140,7 @@ export default function Contact() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card>
                       <CardContent className="p-6 flex items-start gap-4">
                         <div className="bg-creatively-purple/10 p-3 rounded-full">
@@ -158,11 +158,11 @@ export default function Contact() {
                     </Card>
                   </div>
                 </div>
-                
+
                 {/* Contact Form */}
                 <div className="lg:col-span-2">
                   <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
-                  
+
                   <Card>
                     <CardContent className="p-6">
                       {formSubmitted ? (
@@ -182,48 +182,48 @@ export default function Contact() {
                               <label htmlFor="firstName" className="text-sm font-medium">
                                 First Name <span className="text-red-500">*</span>
                               </label>
-                              <Input 
-                                id="firstName" 
-                                placeholder="Enter your first name" 
-                                required 
+                              <Input
+                                id="firstName"
+                                placeholder="Enter your first name"
+                                required
                               />
                             </div>
                             <div className="space-y-2">
                               <label htmlFor="lastName" className="text-sm font-medium">
                                 Last Name <span className="text-red-500">*</span>
                               </label>
-                              <Input 
-                                id="lastName" 
-                                placeholder="Enter your last name" 
-                                required 
+                              <Input
+                                id="lastName"
+                                placeholder="Enter your last name"
+                                required
                               />
                             </div>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <label htmlFor="email" className="text-sm font-medium">
                                 Email <span className="text-red-500">*</span>
                               </label>
-                              <Input 
-                                id="email" 
-                                type="email" 
-                                placeholder="Enter your email" 
-                                required 
+                              <Input
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                required
                               />
                             </div>
                             <div className="space-y-2">
                               <label htmlFor="phone" className="text-sm font-medium">
                                 Phone Number
                               </label>
-                              <Input 
-                                id="phone" 
-                                type="tel" 
-                                placeholder="Enter your phone number" 
+                              <Input
+                                id="phone"
+                                type="tel"
+                                placeholder="Enter your phone number"
                               />
                             </div>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <label htmlFor="subject" className="text-sm font-medium">
                               Subject <span className="text-red-500">*</span>
@@ -242,31 +242,31 @@ export default function Contact() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <label htmlFor="message" className="text-sm font-medium">
                               Message <span className="text-red-500">*</span>
                             </label>
-                            <Textarea 
-                              id="message" 
-                              placeholder="How can we help you?" 
-                              rows={6} 
-                              required 
+                            <Textarea
+                              id="message"
+                              placeholder="How can we help you?"
+                              rows={6}
+                              required
                             />
                           </div>
-                          
+
                           <div className="flex items-start gap-2">
-                            <input 
-                              type="checkbox" 
-                              id="privacy" 
-                              className="mt-1" 
-                              required 
+                            <input
+                              type="checkbox"
+                              id="privacy"
+                              className="mt-1"
+                              required
                             />
                             <label htmlFor="privacy" className="text-sm text-muted-foreground">
                               I agree to the <a href="#" className="text-creatively-purple hover:underline">Privacy Policy</a> and consent to Creatively processing my personal data.
                             </label>
                           </div>
-                          
+
                           <Button type="submit" className="w-full md:w-auto">
                             Send Message <MessageSquare className="ml-2 h-4 w-4" />
                           </Button>
@@ -285,7 +285,7 @@ export default function Contact() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <h2 className="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
-              
+
               <div className="space-y-4">
                 <Card>
                   <CardContent className="p-6">
@@ -295,7 +295,7 @@ export default function Contact() {
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-semibold mb-2">Do you offer custom plans for larger agencies?</h3>
@@ -304,7 +304,7 @@ export default function Contact() {
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-semibold mb-2">Is there a limit to how many projects I can create?</h3>
@@ -313,7 +313,7 @@ export default function Contact() {
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-semibold mb-2">How secure is my data on Creatively?</h3>
@@ -323,7 +323,7 @@ export default function Contact() {
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div className="mt-8 text-center">
                 <p className="text-muted-foreground mb-4">
                   Don't see your question here? Check our comprehensive FAQ or contact us directly.
@@ -391,6 +391,7 @@ export default function Contact() {
               <ul className="space-y-2">
                 <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link></li>
                 <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground">Terms</Link></li>
+                <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground">Refund Policy</Link></li>
                 <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground">Security</Link></li>
               </ul>
             </div>
