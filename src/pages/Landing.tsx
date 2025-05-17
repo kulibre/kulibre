@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import CustomCursor from '@/components/ui/custom-cursor';
 import {
   Check,
   X,
@@ -16,8 +17,8 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-// Custom CSS for floating animations
-const floatingLogoStyles = `
+// Custom CSS for animations
+const animationStyles = `
   @keyframes float {
     0% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
@@ -57,13 +58,125 @@ const floatingLogoStyles = `
   .float-delay-5 {
     animation-delay: 0.7s;
   }
+
+  /* Text animation effects */
+  @keyframes revealText {
+    0% { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes gradientFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .text-reveal {
+    opacity: 0;
+    animation: revealText 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .text-reveal-delay-1 {
+    animation-delay: 0.2s;
+  }
+
+  .text-reveal-delay-2 {
+    animation-delay: 0.4s;
+  }
+
+  .text-reveal-delay-3 {
+    animation-delay: 0.6s;
+  }
+
+  .gradient-text {
+    background: linear-gradient(90deg, #7c3aed, #ec4899, #7c3aed);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientFlow 3s linear infinite;
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+  }
+
+  /* Text fade-in animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .fade-in-text {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: 0.8s;
+  }
+  
+  /* Highlight text effect */
+  .highlight-text {
+    position: relative;
+    display: inline;
+  }
+  
+  .highlight-text::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background-color: rgba(124, 58, 237, 0.2);
+    z-index: -1;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s ease;
+  }
+  
+  .highlight-text.animate::after {
+    transform: scaleX(1);
+    transition-delay: 1.2s;
+  }
+
+
 `;
 
 export default function Landing() {
+  React.useEffect(() => {
+    // Add animation classes with delay to create a sequence
+    const highlights = document.querySelectorAll('.highlight-text');
+    highlights.forEach((highlight, index) => {
+      setTimeout(() => {
+        highlight.classList.add('animate');
+      }, 1000 + (index * 400));
+    });
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Add the custom CSS for floating animations */}
-      <style dangerouslySetInnerHTML={{ __html: floatingLogoStyles }} />
+      {/* Add the custom CSS for animations */}
+      <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
+      
+      {/* Custom cursor */}
+      <CustomCursor />
       {/* Sticky Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 md:px-6">
         <div className="container mx-auto flex justify-between items-center">
@@ -93,21 +206,36 @@ export default function Landing() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-20 md:py-32 bg-gradient-to-b from-kulibre-purple/5 to-white">
+        <section className="py-20 md:py-32 bg-gradient-to-b from-kulibre-purple/5 to-white relative overflow-hidden">
+          {/* Animated background elements */}
+          <div className="absolute inset-0 overflow-hidden opacity-20">
+            <div className="float-animation-slow absolute top-10 left-[10%] w-32 h-32 rounded-full bg-kulibre-purple/20"></div>
+            <div className="float-animation float-delay-2 absolute top-[30%] right-[15%] w-24 h-24 rounded-full bg-creatively-pink/20"></div>
+            <div className="float-animation float-delay-3 absolute bottom-[20%] left-[20%] w-40 h-40 rounded-full bg-creatively-blue/20"></div>
+            <div className="float-animation-slow float-delay-4 absolute bottom-[10%] right-[25%] w-28 h-28 rounded-full bg-creatively-yellow/20"></div>
+          </div>
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
-              Manage Creative Projects <span className="text-kulibre-purple">Seamlessly</span>
+              <span className="text-reveal text-reveal-delay-1 inline-block">Manage</span>{" "}
+              <span className="text-reveal text-reveal-delay-2 inline-block">Creative</span>{" "}
+              <span className="text-reveal text-reveal-delay-3 inline-block">Projects</span>{" "}
+              <span className="gradient-text text-shadow font-extrabold">Seamlessly</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              kulibre helps creative agencies streamline workflows, collaborate effectively, and deliver exceptional results for their clients.
+            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto fade-in-text">
+              <span className="font-medium text-kulibre-purple">kulibre</span> helps creative agencies 
+              <span className="highlight-text"> streamline workflows</span>, 
+              <span className="highlight-text"> collaborate effectively</span>, and 
+              <span className="highlight-text"> deliver exceptional results for their clients</span>.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4 text-reveal text-reveal-delay-3">
               <Link to="/signup">
-                <Button size="lg" className="px-8">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                <Button size="lg" className="px-8 relative overflow-hidden group">
+                  <span className="relative z-10">Get Started</span>
+                  <ArrowRight className="ml-2 h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-kulibre-purple to-kulibre-purple/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="px-8" asChild>
+              <Button variant="outline" size="lg" className="px-8 hover:border-kulibre-purple/50 transition-colors duration-300" asChild>
                 <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>

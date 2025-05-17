@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import { Layout } from "./components/layout/Layout";
+import CustomCursor from "./components/ui/custom-cursor";
 import Index from "./pages/Index";
 import ProjectsPageSimple from "./pages/ProjectsPageSimple";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <CustomCursor />
         <Toaster />
         <Sonner />
         <BrowserRouter>
