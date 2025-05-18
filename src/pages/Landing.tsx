@@ -17,8 +17,9 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-// Custom CSS for animations
+// Enhanced CSS for animations and effects
 const animationStyles = `
+  /* Float animations */
   @keyframes float {
     0% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
@@ -107,10 +108,11 @@ const animationStyles = `
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gradientFlow 3s linear infinite;
+    text-shadow: none; /* Remove text shadow for better contrast with gradient */
   }
 
   .text-shadow {
-    text-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+    text-shadow: 0 4px 12px rgba(124, 58, 237, 0.5); /* Enhanced shadow for better contrast */
   }
 
   /* Text fade-in animation */
@@ -131,10 +133,12 @@ const animationStyles = `
     animation-delay: 0.8s;
   }
   
-  /* Highlight text effect */
+  /* Highlight text effect with improved contrast */
   .highlight-text {
     position: relative;
     display: inline;
+    color: #000; /* Ensure text is dark for contrast */
+    font-weight: 600; /* Make highlighted text slightly bolder */
   }
   
   .highlight-text::after {
@@ -143,8 +147,8 @@ const animationStyles = `
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 30%;
-    background-color: rgba(124, 58, 237, 0.2);
+    height: 40%; /* Increased height for better visibility */
+    background-color: rgba(124, 58, 237, 0.3); /* Increased opacity for better contrast */
     z-index: -1;
     transform: scaleX(0);
     transform-origin: left;
@@ -156,11 +160,214 @@ const animationStyles = `
     transition-delay: 1.2s;
   }
 
+  /* Parallax effect */
+  .parallax-container {
+    position: relative;
+    overflow: hidden;
+  }
 
+  .parallax-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+  }
+
+  /* Card hover effects */
+  .hover-card {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+  }
+
+  .hover-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: rgba(124, 58, 237, 0.3);
+  }
+
+  /* Button hover effects */
+  .glow-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .glow-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+
+  .glow-button:hover::after {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  /* Scroll-triggered animations */
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Staggered animation for children */
+  .stagger-children > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .stagger-children.is-visible > *:nth-child(1) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
+  }
+
+  .stagger-children.is-visible > *:nth-child(2) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.2s;
+  }
+
+  .stagger-children.is-visible > *:nth-child(3) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.3s;
+  }
+
+  .stagger-children.is-visible > *:nth-child(4) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.4s;
+  }
+
+  .stagger-children.is-visible > *:nth-child(5) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.5s;
+  }
+
+  .stagger-children.is-visible > *:nth-child(6) {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.6s;
+  }
+
+  /* Background pattern */
+  .bg-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* High contrast mode */
+  .high-contrast {
+    --text-color: #000000;
+    --background-color: #ffffff;
+    --accent-color: #7c3aed;
+    --accent-color-hover: #6d28d9;
+    --border-color: #000000;
+  }
+
+  /* Dark mode */
+  .dark-mode {
+    --text-color: #ffffff;
+    --background-color: #121212;
+    --accent-color: #9d5cff;
+    --accent-color-hover: #b57bff;
+    --border-color: #333333;
+  }
+
+  /* 3D button effect */
+  .button-3d {
+    transform: translateY(0);
+    box-shadow: 0 4px 0 0 #6d28d9;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .button-3d:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 0 #6d28d9;
+  }
+
+  /* Shimmer effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
 `;
 
 export default function Landing() {
+  const [scrollY, setScrollY] = React.useState(0);
+  const [highContrast, setHighContrast] = React.useState(false);
+  
+  // Handle scroll for parallax effect and scroll-triggered animations
   React.useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      
+      // Add fade-in effect to sections as they come into view
+      const fadeElements = document.querySelectorAll('.fade-in-section');
+      fadeElements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+        
+        if (elementTop < window.innerHeight - elementVisible) {
+          element.classList.add('is-visible');
+        }
+      });
+      
+      // Add staggered animation to children elements
+      const staggerElements = document.querySelectorAll('.stagger-children');
+      staggerElements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const elementVisible = 150;
+        
+        if (elementTop < window.innerHeight - elementVisible) {
+          element.classList.add('is-visible');
+        }
+      });
+    };
+    
     // Add animation classes with delay to create a sequence
     const highlights = document.querySelectorAll('.highlight-text');
     highlights.forEach((highlight, index) => {
@@ -168,7 +375,18 @@ export default function Landing() {
         highlight.classList.add('animate');
       }, 1000 + (index * 400));
     });
+    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Call once on mount to check initial positions
+    
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
+  // Toggle high contrast mode
+  const toggleHighContrast = () => {
+    setHighContrast(!highContrast);
+    document.body.classList.toggle('high-contrast');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -181,45 +399,89 @@ export default function Landing() {
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 md:px-6">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
-              <span className="text-white font-bold">K</span>
+            <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center shimmer">
+              <span className="text-white font-bold relative z-10">K</span>
             </div>
             <h1 className="text-xl font-bold">kulibre</h1>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#features" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Features</a>
-            <a href="#how-it-works" className="text-sm font-medium hover:text-kulibre-purple transition-colors">How It Works</a>
-            <a href="#pricing" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Pricing</a>
-            <a href="#testimonials" className="text-sm font-medium hover:text-kulibre-purple transition-colors">Testimonials</a>
-            <a href="#faq" className="text-sm font-medium hover:text-kulibre-purple transition-colors">FAQ</a>
+            <a href="#features" className="text-sm font-medium hover:text-kulibre-purple transition-colors relative group">
+              Features
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-kulibre-purple transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#how-it-works" className="text-sm font-medium hover:text-kulibre-purple transition-colors relative group">
+              How It Works
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-kulibre-purple transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#pricing" className="text-sm font-medium hover:text-kulibre-purple transition-colors relative group">
+              Pricing
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-kulibre-purple transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#testimonials" className="text-sm font-medium hover:text-kulibre-purple transition-colors relative group">
+              Testimonials
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-kulibre-purple transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#faq" className="text-sm font-medium hover:text-kulibre-purple transition-colors relative group">
+              FAQ
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-kulibre-purple transition-all duration-300 group-hover:w-full"></span>
+            </a>
           </nav>
           <div className="flex items-center space-x-4">
+            <button 
+              onClick={toggleHighContrast}
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label={highContrast ? "Disable high contrast" : "Enable high contrast"}
+              title={highContrast ? "Disable high contrast" : "Enable high contrast"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a10 10 0 0 1 0 20 10 10 0 0 1 0-20z"></path>
+                <path d="M2 12h20"></path>
+              </svg>
+            </button>
             <Link to="/login">
-              <Button variant="outline">Log In</Button>
+              <Button variant="outline" className="hover-card">Log In</Button>
             </Link>
             <Link to="/signup">
-              <Button>Sign Up</Button>
+              <Button className="glow-button button-3d">Sign Up</Button>
             </Link>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-20 md:py-32 bg-gradient-to-b from-kulibre-purple/5 to-white relative overflow-hidden">
-          {/* Animated background elements */}
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            <div className="float-animation-slow absolute top-10 left-[10%] w-32 h-32 rounded-full bg-kulibre-purple/20"></div>
-            <div className="float-animation float-delay-2 absolute top-[30%] right-[15%] w-24 h-24 rounded-full bg-creatively-pink/20"></div>
-            <div className="float-animation float-delay-3 absolute bottom-[20%] left-[20%] w-40 h-40 rounded-full bg-creatively-blue/20"></div>
-            <div className="float-animation-slow float-delay-4 absolute bottom-[10%] right-[25%] w-28 h-28 rounded-full bg-creatively-yellow/20"></div>
+        {/* Hero Section with Parallax */}
+        <section className="py-20 md:py-32 bg-gradient-to-b from-kulibre-purple/5 to-white relative overflow-hidden parallax-container bg-pattern">
+          {/* Animated background elements with parallax effect */}
+          <div className="absolute inset-0 overflow-hidden opacity-30">
+            <div 
+              className="float-animation-slow absolute top-10 left-[10%] w-32 h-32 rounded-full bg-kulibre-purple/20 blur-lg"
+              style={{ transform: `translateY(${scrollY * 0.05}px)` }}
+            ></div>
+            <div 
+              className="float-animation float-delay-2 absolute top-[30%] right-[15%] w-24 h-24 rounded-full bg-creatively-pink/20 blur-lg"
+              style={{ transform: `translateY(${scrollY * -0.08}px)` }}
+            ></div>
+            <div 
+              className="float-animation float-delay-3 absolute bottom-[20%] left-[20%] w-40 h-40 rounded-full bg-creatively-blue/20 blur-lg"
+              style={{ transform: `translateY(${scrollY * 0.1}px)` }}
+            ></div>
+            <div 
+              className="float-animation-slow float-delay-4 absolute bottom-[10%] right-[25%] w-28 h-28 rounded-full bg-creatively-yellow/20 blur-lg"
+              style={{ transform: `translateY(${scrollY * -0.07}px)` }}
+            ></div>
+            
+            {/* Additional decorative elements */}
+            <div className="absolute top-[15%] left-[30%] w-64 h-64 rounded-full bg-gradient-to-r from-purple-500/5 to-pink-500/5 blur-3xl"></div>
+            <div className="absolute bottom-[25%] right-[5%] w-80 h-80 rounded-full bg-gradient-to-r from-blue-500/5 to-green-500/5 blur-3xl"></div>
           </div>
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+          
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-6 tracking-tight">
               <span className="text-reveal text-reveal-delay-1 inline-block">Manage</span>{" "}
               <span className="text-reveal text-reveal-delay-2 inline-block">Creative</span>{" "}
               <span className="text-reveal text-reveal-delay-3 inline-block">Projects</span>{" "}
-              <span className="gradient-text text-shadow font-extrabold">Seamlessly</span>
+              <span className="gradient-text font-extrabold">Seamlessly</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto fade-in-text">
               <span className="font-medium text-kulibre-purple">kulibre</span> helps creative agencies 
@@ -229,13 +491,13 @@ export default function Landing() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 text-reveal text-reveal-delay-3">
               <Link to="/signup">
-                <Button size="lg" className="px-8 relative overflow-hidden group">
+                <Button size="lg" className="px-8 relative overflow-hidden glow-button button-3d">
                   <span className="relative z-10">Get Started</span>
                   <ArrowRight className="ml-2 h-4 w-4 relative z-10 group-hover:translate-x-1 transition-transform" />
                   <div className="absolute inset-0 bg-gradient-to-r from-kulibre-purple to-kulibre-purple/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="px-8 hover:border-kulibre-purple/50 transition-colors duration-300" asChild>
+              <Button variant="outline" size="lg" className="px-8 hover:border-kulibre-purple/50 transition-colors duration-300 hover-card" asChild>
                 <a href="#how-it-works">See How It Works</a>
               </Button>
             </div>
@@ -340,17 +602,21 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold mb-4">Powerful Features for Creative Teams</h2>
+        {/* Features Section with scroll animations */}
+        <section id="features" className="py-20 relative overflow-hidden">
+          {/* Background pattern */}
+          <div className="absolute inset-0 bg-pattern opacity-50"></div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-16 fade-in-section">
+              <span className="inline-block px-4 py-1 rounded-full bg-kulibre-purple/10 text-kulibre-purple text-sm font-medium mb-4">Features</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features for Creative Teams</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Everything you need to manage projects, collaborate with your team, and delight your clients.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
               <FeatureCard
                 icon={<Calendar className="h-10 w-10 text-creatively-purple" />}
                 title="Visual Project Planning"
@@ -385,18 +651,27 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How It Works */}
-        <section id="how-it-works" className="py-20 bg-kulibre-gray">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold mb-4">How kulibre Works</h2>
+        {/* How It Works - with enhanced visuals */}
+        <section id="how-it-works" className="py-20 bg-kulibre-gray relative">
+          {/* Decorative elements */}
+          <div className="absolute left-0 top-0 w-full h-20 bg-gradient-to-b from-white to-transparent"></div>
+          <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-bl from-kulibre-purple/10 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute left-0 top-1/3 w-1/4 h-1/4 bg-gradient-to-tr from-creatively-pink/10 to-transparent rounded-full blur-3xl"></div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-16 fade-in-section">
+              <span className="inline-block px-4 py-1 rounded-full bg-kulibre-purple/10 text-kulibre-purple text-sm font-medium mb-4">How It Works</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">How kulibre Works</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Getting started is simple. Here's how kulibre transforms your creative workflow.
               </p>
             </div>
 
-            <div className="max-w-4xl mx-auto">
-              <div className="space-y-12">
+            <div className="max-w-4xl mx-auto relative">
+              {/* Connecting line */}
+              <div className="absolute left-6 top-6 w-0.5 h-[calc(100%-50px)] bg-gradient-to-b from-kulibre-purple via-creatively-pink to-creatively-blue"></div>
+              
+              <div className="space-y-16 stagger-children">
                 <StepItem
                   number="1"
                   title="Set up your workspace"
@@ -422,17 +697,23 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section id="testimonials" className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
+        {/* Testimonials with enhanced visuals */}
+        <section id="testimonials" className="py-20 relative overflow-hidden">
+          {/* Background elements */}
+          <div className="absolute inset-0 bg-pattern opacity-30"></div>
+          <div className="absolute -left-20 top-20 w-80 h-80 rounded-full bg-gradient-to-br from-kulibre-purple/10 to-transparent blur-3xl"></div>
+          <div className="absolute -right-20 bottom-20 w-80 h-80 rounded-full bg-gradient-to-br from-creatively-pink/10 to-transparent blur-3xl"></div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-16 fade-in-section">
+              <span className="inline-block px-4 py-1 rounded-full bg-kulibre-purple/10 text-kulibre-purple text-sm font-medium mb-4">Testimonials</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Customers Say</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Join thousands of creative teams who've transformed their workflow with kulibre.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
               <TestimonialCard
                 quote="kulibre has revolutionized how we manage our design projects. The client approval workflow is a game-changer."
                 author="Sarah Johnson"
@@ -655,33 +936,46 @@ export default function Landing() {
   );
 }
 
-// Component for feature cards
+// Component for feature cards with enhanced hover effects
 const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => {
   return (
-    <Card className="card-hover h-full">
-      <CardContent className="pt-6">
-        <div className="mb-5">
+    <Card className="hover-card h-full fade-in-section border-2 border-gray-100 transition-all duration-300">
+      <CardContent className="pt-6 relative overflow-hidden group">
+        {/* Background gradient that appears on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-kulibre-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        <div className="mb-5 transform group-hover:scale-110 transition-transform duration-300 relative z-10">
           {icon}
         </div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground">{description}</p>
+        <h3 className="text-xl font-semibold mb-2 group-hover:text-kulibre-purple transition-colors duration-300">{title}</h3>
+        <p className="text-muted-foreground group-hover:text-gray-700 transition-colors duration-300">{description}</p>
+        
+        {/* Decorative corner accent */}
+        <div className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-r-[40px] border-t-transparent border-r-kulibre-purple/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       </CardContent>
     </Card>
   );
 };
 
-// Component for how it works steps
+// Enhanced component for how it works steps with animations
 const StepItem = ({ number, title, description }: { number: string, title: string, description: string }) => {
   return (
-    <div className="flex gap-6">
-      <div className="flex-shrink-0">
-        <div className="w-12 h-12 bg-creatively-purple text-white rounded-full flex items-center justify-center font-bold text-xl">
+    <div className="flex gap-6 group">
+      <div className="flex-shrink-0 relative z-10">
+        <div className="w-12 h-12 bg-gradient-to-br from-kulibre-purple to-creatively-pink text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300 relative">
+          {/* Pulsing effect */}
+          <div className="absolute inset-0 rounded-full bg-kulibre-purple animate-ping opacity-20"></div>
           {number}
         </div>
       </div>
-      <div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground">{description}</p>
+      <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-kulibre-purple flex-1 transform group-hover:translate-x-2 transition-transform duration-300 hover-card">
+        <h3 className="text-xl font-semibold mb-2 group-hover:text-kulibre-purple transition-colors duration-300">{title}</h3>
+        <p className="text-muted-foreground group-hover:text-gray-700 transition-colors duration-300">{description}</p>
+        
+        {/* Decorative icon */}
+        <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-kulibre-purple/50">
+          <ArrowRight className="h-5 w-5" />
+        </div>
       </div>
     </div>
   );
