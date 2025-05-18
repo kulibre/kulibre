@@ -334,6 +334,65 @@ const animationStyles = `
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
+  
+  /* Glass effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+    transform: translateY(-5px);
+  }
+  
+  /* Company logo animations */
+  .company-logo {
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: all 0.5s ease;
+  }
+  
+  .company-logo:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  
+  @keyframes fadeInLogo {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 0.7;
+      transform: translateY(0);
+    }
+  }
+  
+  .company-logo-animation {
+    animation: fadeInLogo 0.8s ease forwards;
+  }
+  
+  .logo-delay-1 { animation-delay: 0.1s; }
+  .logo-delay-2 { animation-delay: 0.2s; }
+  .logo-delay-3 { animation-delay: 0.3s; }
+  .logo-delay-4 { animation-delay: 0.4s; }
+  .logo-delay-5 { animation-delay: 0.5s; }
+  .logo-delay-6 { animation-delay: 0.6s; }
 `;
 
 export default function Landing() {
@@ -395,8 +454,8 @@ export default function Landing() {
       
       {/* Custom cursor */}
       <CustomCursor />
-      {/* Sticky Navbar */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 p-4 md:px-6">
+      {/* Sticky Navbar with Glass Effect */}
+      <header className="sticky top-0 z-50 glass-effect border-b border-gray-100 p-4 md:px-6">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center shimmer">
@@ -602,6 +661,85 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Trusted Companies Section */}
+        <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10 fade-in-section">
+              <p className="text-sm uppercase tracking-wider text-muted-foreground mb-2">Trusted by innovative companies</p>
+              <h3 className="text-2xl font-semibold text-gray-800">Empowering creative teams worldwide</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-5xl mx-auto">
+              {/* Company 1 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-1">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">Stackify</span>
+                </div>
+              </div>
+              
+              {/* Company 2 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-2">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <circle cx="12" cy="12" r="10" stroke="#ec4899" strokeWidth="2"/>
+                    <path d="M12 8V16" stroke="#ec4899" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M8 12H16" stroke="#ec4899" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">Circleplus</span>
+                </div>
+              </div>
+              
+              {/* Company 3 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-3">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <path d="M6 9L12 15L18 9" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">Wavefront</span>
+                </div>
+              </div>
+              
+              {/* Company 4 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-4">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="#22c55e" strokeWidth="2"/>
+                    <path d="M9 12L11 14L15 10" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">TaskMaster</span>
+                </div>
+              </div>
+              
+              {/* Company 5 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-5">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#f59e0b" strokeWidth="2"/>
+                    <path d="M12 8V16" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M8 12H16" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">Innovate</span>
+                </div>
+              </div>
+              
+              {/* Company 6 */}
+              <div className="flex items-center justify-center company-logo company-logo-animation logo-delay-6">
+                <div className="p-4 rounded-lg glass-card hover:shadow-lg transition-all duration-300 w-full h-24 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-16">
+                    <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="ml-2 font-bold text-gray-700">HomeBase</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section with scroll animations */}
         <section id="features" className="py-20 relative overflow-hidden">
           {/* Background pattern */}
@@ -734,9 +872,17 @@ export default function Landing() {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-20 bg-kulibre-gray">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
+        <section id="pricing" className="py-20 bg-gradient-to-br from-kulibre-purple/5 via-white to-kulibre-purple/10 relative overflow-hidden">
+          {/* Background elements for glass effect */}
+          <div className="absolute inset-0 overflow-hidden opacity-30">
+            <div className="float-animation-slow absolute top-10 left-[10%] w-32 h-32 rounded-full bg-kulibre-purple/20 blur-lg"></div>
+            <div className="float-animation float-delay-2 absolute top-[30%] right-[15%] w-24 h-24 rounded-full bg-creatively-pink/20 blur-lg"></div>
+            <div className="float-animation float-delay-3 absolute bottom-[20%] left-[20%] w-40 h-40 rounded-full bg-creatively-blue/20 blur-lg"></div>
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-16 fade-in-section">
+              <span className="inline-block px-4 py-1 rounded-full bg-kulibre-purple/10 text-kulibre-purple text-sm font-medium mb-4">Pricing</span>
               <h2 className="text-3xl font-bold mb-4">Simple, Transparent Pricing</h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Choose the plan that best fits your team's needs. No hidden fees.
@@ -1015,7 +1161,7 @@ const PricingCard = ({
   ctaText: string,
   popular: boolean
 }) => (
-  <Card className={`h-full ${
+  <Card className={`h-full glass-card hover-card ${
     popular ? 'border-2 border-creatively-purple relative' : ''
   }`}>
     {popular && (
@@ -1026,22 +1172,28 @@ const PricingCard = ({
     <CardHeader>
       <CardTitle className="flex justify-between items-center">
         {title}
-        <DollarSign className="h-5 w-5 text-muted-foreground" />
+        <div className="rounded-full bg-kulibre-purple/10 p-2">
+          <DollarSign className="h-5 w-5 text-kulibre-purple" />
+        </div>
       </CardTitle>
     </CardHeader>
     <CardContent className="space-y-4">
-      <div className="text-3xl font-bold">{price}</div>
+      <div className="text-3xl font-bold gradient-text">{price}</div>
       <p className="text-sm text-muted-foreground">{description}</p>
       <ul className="space-y-2">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center gap-2 text-sm">
-            <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+            <div className="rounded-full bg-green-100 p-1">
+              <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+            </div>
             <span>{feature}</span>
           </li>
         ))}
         {unavailable.map((feature, index) => (
           <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-            <X className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <div className="rounded-full bg-red-100 p-1">
+              <X className="h-3 w-3 text-red-500 flex-shrink-0" />
+            </div>
             <span>{feature}</span>
           </li>
         ))}
@@ -1049,7 +1201,7 @@ const PricingCard = ({
     </CardContent>
     <CardFooter>
       <Link to="/signup" className="w-full">
-        <Button className={`w-full ${popular ? 'bg-creatively-purple hover:bg-creatively-purple/90' : ''}`}>
+        <Button className={`w-full glow-button ${popular ? 'bg-creatively-purple hover:bg-creatively-purple/90' : ''}`}>
           {ctaText}
         </Button>
       </Link>
