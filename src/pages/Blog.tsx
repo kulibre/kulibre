@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Calendar, Clock, ArrowRight, Search } from 'lucide-react';
+import Footer from '@/components/ui/footer';
 
 export default function Blog() {
   // Sample blog posts
@@ -255,59 +256,7 @@ export default function Blog() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 py-12 border-t">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2">
-                <li><a href="/#features" className="text-sm text-muted-foreground hover:text-foreground">Features</a></li>
-                <li><a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground">Roadmap</a></li>
-                <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground">Updates</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2">
-                <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground">About</Link></li>
-                <li><Link to="/careers" className="text-sm text-muted-foreground hover:text-foreground">Careers</Link></li>
-                <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">Blog</Link></li>
-                <li><Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2">
-                <li><Link to="/documentation" className="text-sm text-muted-foreground hover:text-foreground">Documentation</Link></li>
-                <li><Link to="/tutorials" className="text-sm text-muted-foreground hover:text-foreground">Tutorials</Link></li>
-                <li><Link to="/support" className="text-sm text-muted-foreground hover:text-foreground">Support</Link></li>
-                <li><Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground">FAQ</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2">
-                <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link></li>
-                <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground">Terms</Link></li>
-                <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground">Refund Policy</Link></li>
-                <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground">Security</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="bg-creatively-purple rounded-lg w-8 h-8 flex items-center justify-center">
-                <span className="text-white font-bold">C</span>
-              </div>
-              <span className="font-bold">Creatively</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Creatively. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -209,8 +209,9 @@ export default function TasksPage() {
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .from('profiles')
+          .from('team_members')
           .select('id, full_name, avatar_url')
+          .eq('active', true)
           .order('full_name');
 
         if (error) throw error;
