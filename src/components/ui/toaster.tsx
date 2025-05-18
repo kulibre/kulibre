@@ -1,4 +1,6 @@
 import { useToast } from "@/hooks/use-toast"
+import { useSoundEffects } from "@/hooks/use-sound-effects"
+import { useEffect } from "react"
 import {
   Toast,
   ToastClose,
@@ -10,6 +12,24 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const { playNotification, playError, playSuccess } = useSoundEffects()
+
+  // Play sound when toasts appear
+  useEffect(() => {
+    if (toasts.length > 0) {
+      const latestToast = toasts[toasts.length - 1]
+      
+      if (latestToast.variant === "destructive") {
+        playError()
+      } else if (latestToast.variant === "success" as any) {
+        // Using type assertion to avoid TypeScript error
+        // The actual variant might be extended in the application
+        playSuccess()
+      } else {
+        playNotification()
+      }
+    }
+  }, [toasts.length, playNotification, playError, playSuccess])
 
   return (
     <ToastProvider>

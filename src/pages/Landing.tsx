@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -923,7 +922,7 @@ export default function Landing() {
                   "Enterprise Features",
                   "Priority Support"
                 ]}
-                ctaText="Start with Basic"
+                ctaText="Go Basic"
                 popular={true}
               />
               <PricingCard
@@ -1150,7 +1149,7 @@ const PricingCard = ({
     </CardContent>
     <CardFooter>
       <Link to="/signup" className="w-full">
-        <Button className={`w-full glow-button ${popular ? 'bg-creatively-purple hover:bg-creatively-purple/90' : ''}`}>
+        <Button className="w-full glow-button">
           {ctaText}
         </Button>
       </Link>

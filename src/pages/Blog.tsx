@@ -12,7 +12,7 @@ export default function Blog() {
     {
       id: 1,
       title: "5 Ways to Improve Creative Collaboration in Remote Teams",
-      excerpt: "Remote work has become the norm for many creative agencies. Learn how to maintain effective collaboration and creativity when your team is distributed.",
+      excerpt: "Remote work has become the norm for many creative agencies. Learn how to maintain effective collaboration and kulibre when your team is distributed.",
       author: "Alex Johnson",
       date: "June 15, 2023",
       readTime: "5 min read",
@@ -41,7 +41,7 @@ export default function Blog() {
     },
     {
       id: 4,
-      title: "Balancing Creativity and Productivity in Agency Work",
+      title: "Balancing kulibre and Productivity in Agency Work",
       excerpt: "Creative work requires time and space, but agencies also need to be productive and profitable. Learn how to strike the right balance.",
       author: "Emma Wilson",
       date: "March 5, 2023",

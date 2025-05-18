@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSoundEffects } from '@/hooks/use-sound-effects';
 
 // Footer animation styles
 const footerAnimationStyles = `
@@ -102,6 +103,7 @@ const footerAnimationStyles = `
 
 export default function Footer() {
   const [isVisible, setIsVisible] = useState(false);
+  const { playButtonClick } = useSoundEffects();
   
   useEffect(() => {
     // Set visible after component mounts to trigger animations
@@ -124,6 +126,11 @@ export default function Footer() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  // Handle link clicks with sound
+  const handleLinkClick = (e) => {
+    playButtonClick();
+  };
+
   return (
     <footer id="site-footer" className="bg-gray-50 py-12 border-t footer-wave">
       {/* Add the custom CSS for animations */}
@@ -134,37 +141,37 @@ export default function Footer() {
           <div className={`footer-reveal footer-delay-1 ${isVisible ? 'opacity-100' : ''}`}>
             <h3 className="font-semibold mb-4">Product</h3>
             <ul className="space-y-2">
-              <li><a href="/#features" className="text-sm text-muted-foreground hover:text-foreground footer-link">Features</a></li>
-              <li><a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground footer-link">Pricing</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground footer-link">Roadmap</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground footer-link">Updates</a></li>
+              <li><a href="/#features" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Features</a></li>
+              <li><a href="/#pricing" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Pricing</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Roadmap</a></li>
+              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Updates</a></li>
             </ul>
           </div>
           <div className={`footer-reveal footer-delay-2 ${isVisible ? 'opacity-100' : ''}`}>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground footer-link">About</Link></li>
-              <li><Link to="/careers" className="text-sm text-muted-foreground hover:text-foreground footer-link">Careers</Link></li>
-              <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground footer-link">Blog</Link></li>
-              <li><Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground footer-link">Contact</Link></li>
+              <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>About</Link></li>
+              <li><Link to="/careers" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Careers</Link></li>
+              <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Blog</Link></li>
+              <li><Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Contact</Link></li>
             </ul>
           </div>
           <div className={`footer-reveal footer-delay-3 ${isVisible ? 'opacity-100' : ''}`}>
             <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><Link to="/documentation" className="text-sm text-muted-foreground hover:text-foreground footer-link">Documentation</Link></li>
-              <li><Link to="/tutorials" className="text-sm text-muted-foreground hover:text-foreground footer-link">Tutorials</Link></li>
-              <li><Link to="/support" className="text-sm text-muted-foreground hover:text-foreground footer-link">Support</Link></li>
-              <li><Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground footer-link">FAQ</Link></li>
+              <li><Link to="/documentation" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Documentation</Link></li>
+              <li><Link to="/tutorials" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Tutorials</Link></li>
+              <li><Link to="/support" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Support</Link></li>
+              <li><Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>FAQ</Link></li>
             </ul>
           </div>
           <div className={`footer-reveal footer-delay-4 ${isVisible ? 'opacity-100' : ''}`}>
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground footer-link">Privacy</Link></li>
-              <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground footer-link">Terms</Link></li>
-              <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground footer-link">Refund Policy</Link></li>
-              <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground footer-link">Security</Link></li>
+              <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Privacy</Link></li>
+              <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Terms</Link></li>
+              <li><Link to="/refund-policy" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Refund Policy</Link></li>
+              <li><Link to="/security" className="text-sm text-muted-foreground hover:text-foreground footer-link" onClick={handleLinkClick}>Security</Link></li>
             </ul>
           </div>
         </div>

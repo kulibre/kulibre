@@ -256,7 +256,7 @@ export default function TasksPage() {
             // If table doesn't exist, create it
             if (tableCheckError) {
               console.log("Creating user_tasks table");
-              await supabase.rpc('execute_sql', {
+              await (supabase.rpc as any)('execute_sql', {
                 query: `
                   CREATE TABLE IF NOT EXISTS public.user_tasks (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

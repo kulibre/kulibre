@@ -364,7 +364,7 @@ export default function TasksPage() {
                 );
               `;
 
-              await supabase.rpc('execute_sql', { query: createTableQuery });
+              await (supabase.rpc as any)("execute_sql", { query: createTableQuery });
             }
 
             // Create an array of user_task objects to insert
@@ -497,7 +497,7 @@ export default function TasksPage() {
               );
             `;
 
-            await supabase.rpc('execute_sql', { query: createTableQuery });
+            await (supabase.rpc as any)("execute_sql", { query: createTableQuery });
           } else {
             // Always delete existing assignments first
             console.log("Deleting existing user task assignments for task:", task.id);

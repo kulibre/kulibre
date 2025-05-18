@@ -40,7 +40,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     
     // Mute all sounds if disabled
     Object.values(soundEffects.sounds).forEach(sound => {
-      sound.muted = !soundEnabled;
+      // Type assertion to HTMLAudioElement
+      (sound as HTMLAudioElement).muted = !soundEnabled;
     });
   }, [soundEnabled, volume]);
 

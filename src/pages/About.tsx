@@ -74,9 +74,9 @@ export default function About() {
               <h2 className="text-3xl font-bold mb-8">Our Values</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold mb-3">Creativity First</h3>
+                  <h3 className="text-xl font-semibold mb-3">kulibre First</h3>
                   <p className="text-muted-foreground">
-                    We believe in putting creativity at the center of everything we do. Our platform is designed to enhance creative work, not hinder it.
+                    We believe in putting kulibre at the center of everything we do. Our platform is designed to enhance creative work, not hinder it.
                   </p>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-sm">

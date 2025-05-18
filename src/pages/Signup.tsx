@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -41,14 +40,14 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-creatively-gray/50">
+    <div className="min-h-screen flex items-center justify-center bg-kulibre-gray/50">
       <div className="w-full max-w-md p-8 md:p-10 bg-white rounded-xl shadow-md">
         <div className="flex flex-col items-center text-center mb-8">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <div className="bg-creatively-purple rounded-lg w-10 h-10 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">C</span>
+            <div className="bg-kulibre-purple rounded-lg w-10 h-10 flex items-center justify-center">
+              <span className="text-white font-bold text-xl">K</span>
             </div>
-            <h1 className="text-2xl font-bold">Creatively</h1>
+            <h1 className="text-2xl font-bold">kulibre</h1>
           </Link>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
             Create your account
@@ -116,7 +115,7 @@ export default function Signup() {
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-creatively-purple hover:text-creatively-purple/80">
+            <Link to="/login" className="font-medium text-kulibre-purple hover:text-kulibre-purple/80">
               Sign in
             </Link>
           </p>
@@ -125,9 +124,9 @@ export default function Signup() {
         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
           <p className="text-xs text-muted-foreground">
             By creating an account, you agree to our{' '}
-            <a href="#" className="text-creatively-purple hover:underline">Terms of Service</a>{' '}
+            <a href="#" className="text-kulibre-purple hover:underline">Terms of Service</a>{' '}
             and{' '}
-            <a href="#" className="text-creatively-purple hover:underline">Privacy Policy</a>
+            <a href="#" className="text-kulibre-purple hover:underline">Privacy Policy</a>
           </p>
         </div>
       </div>
