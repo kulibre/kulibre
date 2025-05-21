@@ -1,5 +1,4 @@
-
-import { Calendar, File, FolderKanban, Home, Settings, CheckSquare, Users } from "lucide-react";
+import { Calendar, File, FolderKanban, Home, Settings, CheckSquare, Users, BarChart2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +22,7 @@ export function Sidebar({ className }: SidebarProps) {
         <NavItem icon={<CheckSquare className="w-5 h-5" />} href="/tasks" label="Tasks" />
         <NavItem icon={<Users className="w-5 h-5" />} href="/team" label="Team" />
         <NavItem icon={<Calendar className="w-5 h-5" />} href="/calendar" label="Calendar" />
+        <NavItem icon={<BarChart2 className="w-5 h-5" />} href="/analytics" label="Analytics" />
         <NavItem icon={<File className="w-5 h-5" />} href="/files" label="Files" />
         <NavItem icon={<Settings className="w-5 h-5" />} href="/settings" label="Settings" />
       </nav>

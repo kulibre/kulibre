@@ -379,7 +379,17 @@ export default function TasksPage() {
 
   // Handle edit task
   const handleEditTask = (task: Task) => {
-    setCurrentTask(task);
+    let assignedUsers: User[] = [];
+    if (Array.isArray(task.assigned_users)) {
+      if (typeof task.assigned_users[0] === "string") {
+        // If assigned_users is an array of IDs, map to user objects
+        assignedUsers = users.filter(u => (task.assigned_users as any[]).includes(u.id));
+      } else if (typeof task.assigned_users[0] === "object") {
+        // If assigned_users is already an array of User objects
+        assignedUsers = task.assigned_users as User[];
+      }
+    }
+    setCurrentTask({ ...task, assigned_users: assignedUsers });
     setIsEditTaskOpen(true);
   };
 

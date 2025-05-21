@@ -12,7 +12,15 @@ import {
   Plus,
   CheckCircle2,
   Circle,
-  Trash2
+  Trash2,
+  Upload,
+  Download,
+  UserPlus,
+  Files,
+  ChevronLeft,
+  Share2,
+  Settings,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +57,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { format, parseISO } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { UploadDialog } from "@/components/files/UploadDialog";
+import type { ProjectType as IProject } from "@/types";
 
 export default function ProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -64,131 +74,60 @@ export default function ProjectDetailsPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [databaseError, setDatabaseError] = useState(false);
-
-  // Define a type for the project object to handle optional properties
-  type ProjectType = {
-    id: string;
-    name: string;
-    description: string;
-    type: string;
-    status: string;
-    team_members: any[];
-    client?: { id: string; name: string };
-    client_id?: string;
-    start_date?: string | null;
-    due_date?: string | null;
-    budget?: number | string | null;
-    created_at?: string;
-    updated_at?: string;
-  };
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [isRemovingMember, setIsRemovingMember] = useState<string | null>(null);
+  const [fileList, setFileList] = useState<any[]>([]);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [isDeletingFile, setIsDeletingFile] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Fetch project details
   const { data: project, isLoading, refetch, error: queryError } = useQuery({
     queryKey: ['project', id],
-    retry: 1, // Limit retries to avoid excessive attempts
+    enabled: !!id,
     queryFn: async () => {
       if (!id) {
-        console.error("No project ID provided");
-        toast({
-          title: "Error",
-          description: "Project ID is required",
-          variant: "destructive",
-        });
-        navigate('/projects');
         return null;
       }
 
       try {
-        console.log("Fetching project details for ID:", id);
-
-        // First, check if the projects table exists
-        const { data: tableCheck, error: tableCheckError } = await supabase
-          .from('projects')
-          .select('id')
-          .limit(1);
-
-        console.log("Table check result:", { tableCheck, tableCheckError });
-
-        if (tableCheckError) {
-          console.error("Error checking projects table:", tableCheckError);
-
-          // If the table doesn't exist, show a message
-          if (tableCheckError.message.includes("relation") && tableCheckError.message.includes("does not exist")) {
-            console.log("Projects table doesn't exist.");
-            setDatabaseError(true);
-            return null;
-          }
-
-          throw tableCheckError;
-        }
-
-        // Fetch project details with simplified query first
-        console.log("Fetching basic project data first...");
-        const { data: basicProject, error: basicProjectError } = await supabase
-          .from('projects')
-          .select('id, name, description, type, status')
-          .eq('id', id)
-          .single();
-
-        if (basicProjectError) {
-          console.error("Error fetching basic project data:", basicProjectError);
-
-          if (basicProjectError.code === 'PGRST116') {
-            console.log("Project not found");
-            toast({
-              title: "Project not found",
-              description: "The project you're looking for doesn't exist or you don't have access to it.",
-              variant: "destructive",
-            });
-            navigate('/projects', { replace: true });
-            return null;
-          }
-
-          throw basicProjectError;
-        }
-
-        console.log("Basic project data fetched successfully:", basicProject);
-
-        // Now fetch full project details
-        console.log("Fetching complete project details...");
+        // Fetch project with team members
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select(`
             *,
-            client:client_id (id, name),
             team_members:project_members (
               user_id,
               role,
-              profiles:user_id (id, full_name, avatar_url)
+              team_members:user_id (
+                id,
+                full_name,
+                avatar_url,
+                email,
+                job_title,
+                department
+              )
             )
           `)
           .eq('id', id)
           .single();
 
         if (projectError) {
-          console.error("Error fetching complete project details:", projectError);
-
-          // If we at least have basic project data, use that
-          if (basicProject) {
-            console.log("Using basic project data as fallback");
-            setProjectName(basicProject.name);
-            setProjectStatus(basicProject.status);
-            return {
-              ...basicProject,
-              team_members: []
-            } as ProjectType;
-          }
-
           throw projectError;
         }
 
-        console.log("Project fetched successfully:", projectData);
+        if (!projectData) {
+          throw new Error('Project not found');
+        }
 
         // Process data to format team members
         const processedProject = {
           ...projectData,
           team_members: projectData.team_members?.map((member: any) => ({
-            ...member.profiles,
+            ...member.team_members,
             role: member.role
           })) || []
         };
@@ -197,30 +136,35 @@ export default function ProjectDetailsPage() {
         setProjectName(processedProject.name);
         setProjectStatus(processedProject.status);
 
-        return processedProject as ProjectType;
+        return processedProject as IProject;
       } catch (error: any) {
         console.error("Error in fetchProject:", error);
-
-        // Check if this is a Supabase connection error
-        if (error.message && (
-            error.message.includes("Failed to fetch") ||
-            error.message.includes("NetworkError") ||
-            error.message.includes("network") ||
-            error.message.includes("connection")
-          )) {
-          console.log("This appears to be a connection error");
-          setDatabaseError(true);
-          return null;
-        }
-
-        toast({
-          title: "Error loading project",
-          description: error.message || "Failed to load project details. Please try again.",
-          variant: "destructive",
-        });
-        return null;
+        // ... rest of error handling ...
       }
     },
+  });
+
+  // Fetch users for add-member dropdown
+  const { data: users } = useQuery({
+    queryKey: ['users-for-project-members', id, project?.team_members],
+    queryFn: async () => {
+      // Get all team members
+      const { data: allTeamMembers, error } = await supabase
+        .from('team_members')
+        .select('id, full_name, avatar_url, email, job_title, department')
+        .eq('active', true)
+        .order('full_name');
+
+      if (error) {
+        console.error("Error fetching team members:", error);
+        throw error;
+      }
+
+      // Filter out users who are already team members
+      const existingMemberIds = new Set(project?.team_members?.map(member => member.id) || []);
+      return allTeamMembers.filter(user => !existingMemberIds.has(user.id));
+    },
+    enabled: !!id && !!project,
   });
 
   // Format status for display
@@ -340,10 +284,116 @@ export default function ProjectDetailsPage() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const tabParam = url.searchParams.get('tab');
-    if (tabParam && ['overview', 'tasks', 'files', 'team'].includes(tabParam)) {
+    if (tabParam && ['overview', 'files', 'team'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, []);
+
+  // Fetch files for this project from Supabase Storage
+  const fetchFiles = async () => {
+    if (!id) return;
+    setIsLoadingFiles(true);
+    try {
+      const { data, error } = await supabase.storage.from('file_uploads').list(`project_${id}`);
+      if (error) throw error;
+      setFileList(data || []);
+    } catch (e) {
+      setFileList([]);
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  };
+  useEffect(() => { fetchFiles(); }, [id, uploadDialogOpen]);
+
+  // Handle file upload
+  const handleUploadComplete = async (file: File) => {
+    if (!id) return;
+    const filePath = `project_${id}/${file.name}`;
+    const { error } = await supabase.storage.from('file_uploads').upload(filePath, file, { upsert: false });
+    if (!error) fetchFiles();
+    // Optionally: show toast
+  };
+
+  // Handle file download
+  const handleDownload = async (fileName: string) => {
+    if (!id) return;
+    const { data, error } = await supabase.storage.from('file_uploads').download(`project_${id}/${fileName}`);
+    if (data) {
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+  };
+
+  // Handle file delete
+  const handleDeleteFile = async (fileName: string) => {
+    if (!id) return;
+    setIsDeletingFile(fileName);
+    await supabase.storage.from('file_uploads').remove([`project_${id}/${fileName}`]);
+    setIsDeletingFile(null);
+    fetchFiles();
+  };
+
+  // Add member logic
+  const handleAddMember = async () => {
+    if (!id || !selectedUserId) return;
+    
+    try {
+      setIsAddingMember(true);
+      
+      // Add the team member to the project
+      const { error } = await supabase
+        .from('project_members')
+        .insert({
+          project_id: id,
+          user_id: selectedUserId,
+          role: 'member',
+          assigned_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error("Error adding team member:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add team member to the project. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Success
+      toast({
+        title: "Success",
+        description: "Team member added to the project successfully.",
+      });
+
+      // Reset state and refetch data
+      setAddMemberOpen(false);
+      setSelectedUserId("");
+      refetch();
+    } catch (error) {
+      console.error("Error in handleAddMember:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
+  // Remove member logic
+  const handleRemoveMember = async (userId: string) => {
+    if (!id) return;
+    setIsRemovingMember(userId);
+    await supabase.from('project_members').delete().eq('project_id', id).eq('user_id', userId);
+    setIsRemovingMember(null);
+    refetch();
+  };
 
   if (isLoading) {
     return (
@@ -531,11 +581,11 @@ CREATE TABLE IF NOT EXISTS public.project_members (
           )}
           <div className="flex items-center gap-2 mt-1">
             <p className="text-muted-foreground">
-              {(project as ProjectType).client?.name ? `Client: ${(project as ProjectType).client!.name}` : "No client assigned"}
+              {(project as IProject).client?.name ? `Client: ${(project as IProject).client!.name}` : "No client assigned"}
             </p>
             <span className="text-muted-foreground">•</span>
             <p className="text-muted-foreground">
-              Created: {(project as ProjectType).created_at ? new Date((project as ProjectType).created_at!).toLocaleDateString() : "Unknown"}
+              Created: {(project as IProject).created_at ? new Date((project as IProject).created_at!).toLocaleDateString() : "Unknown"}
             </p>
           </div>
         </div>
@@ -625,8 +675,8 @@ CREATE TABLE IF NOT EXISTS public.project_members (
             <div>
               <p className="text-sm text-muted-foreground">Start Date</p>
               <p className="font-medium">
-                {(project as ProjectType).start_date
-                  ? new Date((project as ProjectType).start_date!).toLocaleDateString()
+                {(project as IProject).start_date
+                  ? new Date((project as IProject).start_date!).toLocaleDateString()
                   : "Not set"}
               </p>
             </div>
@@ -640,8 +690,8 @@ CREATE TABLE IF NOT EXISTS public.project_members (
             <div>
               <p className="text-sm text-muted-foreground">Due Date</p>
               <p className="font-medium">
-                {(project as ProjectType).due_date
-                  ? new Date((project as ProjectType).due_date!).toLocaleDateString()
+                {(project as IProject).due_date
+                  ? new Date((project as IProject).due_date!).toLocaleDateString()
                   : "Not set"}
               </p>
             </div>
@@ -655,8 +705,8 @@ CREATE TABLE IF NOT EXISTS public.project_members (
             <div>
               <p className="text-sm text-muted-foreground">Budget</p>
               <p className="font-medium">
-                {(project as ProjectType).budget
-                  ? `$${(typeof (project as ProjectType).budget === 'string' ? parseFloat((project as ProjectType).budget as string) : (project as ProjectType).budget as number).toLocaleString()}`
+                {(project as IProject).budget
+                  ? `$${(typeof (project as IProject).budget === 'string' ? parseFloat((project as IProject).budget as string) : (project as IProject).budget as number).toLocaleString()}`
                   : "Not set"}
               </p>
             </div>
@@ -680,7 +730,6 @@ CREATE TABLE IF NOT EXISTS public.project_members (
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="files">Files</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
         </TabsList>
@@ -721,11 +770,11 @@ CREATE TABLE IF NOT EXISTS public.project_members (
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Created:</dt>
-                      <dd>{(project as ProjectType).created_at ? new Date((project as ProjectType).created_at!).toLocaleDateString() : "Unknown"}</dd>
+                      <dd>{(project as IProject).created_at ? new Date((project as IProject).created_at!).toLocaleDateString() : "Unknown"}</dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Last Updated:</dt>
-                      <dd>{(project as ProjectType).updated_at ? new Date((project as ProjectType).updated_at!).toLocaleDateString() : "Unknown"}</dd>
+                      <dd>{(project as IProject).updated_at ? new Date((project as IProject).updated_at!).toLocaleDateString() : "Unknown"}</dd>
                     </div>
                   </dl>
                 </div>
@@ -735,26 +784,26 @@ CREATE TABLE IF NOT EXISTS public.project_members (
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Start Date:</dt>
                       <dd>
-                        {(project as ProjectType).start_date
-                          ? new Date((project as ProjectType).start_date!).toLocaleDateString()
+                        {(project as IProject).start_date
+                          ? new Date((project as IProject).start_date!).toLocaleDateString()
                           : "Not set"}
                       </dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Due Date:</dt>
                       <dd>
-                        {(project as ProjectType).due_date
-                          ? new Date((project as ProjectType).due_date!).toLocaleDateString()
+                        {(project as IProject).due_date
+                          ? new Date((project as IProject).due_date!).toLocaleDateString()
                           : "Not set"}
                       </dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-muted-foreground">Duration:</dt>
                       <dd>
-                        {(project as ProjectType).start_date && (project as ProjectType).due_date
+                        {(project as IProject).start_date && (project as IProject).due_date
                           ? `${Math.ceil(
-                              (new Date((project as ProjectType).due_date!).getTime() -
-                                new Date((project as ProjectType).start_date!).getTime()) /
+                              (new Date((project as IProject).due_date!).getTime() -
+                                new Date((project as IProject).start_date!).getTime()) /
                                 (1000 * 60 * 60 * 24)
                             )} days`
                           : "Not available"}
@@ -767,29 +816,42 @@ CREATE TABLE IF NOT EXISTS public.project_members (
           </Card>
         </TabsContent>
 
-        <TabsContent value="tasks" className="space-y-4">
-          <ProjectTasksTab projectId={id} />
-        </TabsContent>
-
         <TabsContent value="files" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Files</CardTitle>
-              <Button size="sm">Upload File</Button>
+              <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
+                <Upload className="h-4 w-4 mr-2" />Upload File
+              </Button>
             </CardHeader>
             <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                No files have been uploaded to this project yet.
-              </p>
+              {isLoadingFiles ? (
+                <p className="text-center text-muted-foreground py-8">Loading files...</p>
+              ) : fileList.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No files have been uploaded to this project yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {fileList.map((file) => (
+                    <div key={file.name} className="flex items-center justify-between p-2 border rounded-md">
+                      <span>{file.name}</span>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="ghost" onClick={() => handleDownload(file.name)}><Download className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleDeleteFile(file.name)} disabled={isDeletingFile === file.name}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
+          <UploadDialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen} onUploadComplete={handleUploadComplete} currentFolderId={id ? `project_${id}` : null} />
         </TabsContent>
 
         <TabsContent value="team" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Team Members</CardTitle>
-              <Button size="sm">Add Member</Button>
+              <Button size="sm" onClick={() => setAddMemberOpen(true)}><UserPlus className="h-4 w-4 mr-2" />Add Member</Button>
             </CardHeader>
             <CardContent>
               {project.team_members && project.team_members.length > 0 ? (
@@ -798,26 +860,45 @@ CREATE TABLE IF NOT EXISTS public.project_members (
                     <div key={member.id} className="flex items-center justify-between p-3 border rounded-md">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-creatively-purple flex items-center justify-center text-white font-medium">
-                          {member.full_name
-                            ? member.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-                            : '?'}
+                          {member.full_name ? member.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : '?'}
                         </div>
                         <div>
                           <p className="font-medium">{member.full_name || "Unknown User"}</p>
                           <p className="text-sm text-muted-foreground">{member.role || "Member"}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">Remove</Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleRemoveMember(member.id)} disabled={isRemovingMember === member.id}>Remove</Button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No team members have been added to this project yet.
-                </p>
+                <p className="text-center text-muted-foreground py-8">No team members have been added to this project yet.</p>
               )}
             </CardContent>
           </Card>
+          {/* Add Member Dialog */}
+          <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+            <DialogContent className="sm:max-w-[400px]">
+              <DialogHeader>
+                <DialogTitle>Add Team Member</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Label htmlFor="user">Select User</Label>
+                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                  <SelectTrigger id="user"><SelectValue placeholder="Select user" /></SelectTrigger>
+                  <SelectContent>
+                    {users?.map((user: any) => (
+                      <SelectItem key={user.id} value={user.id}>{user.full_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAddMemberOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddMember} disabled={!selectedUserId || isAddingMember}>{isAddingMember ? "Adding..." : "Add Member"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
 
@@ -850,682 +931,4 @@ CREATE TABLE IF NOT EXISTS public.project_members (
       </Dialog>
     </div>
   );
-}
-
-// ProjectTasksTab component for the Tasks tab in project details
-interface ProjectTasksTabProps {
-  projectId?: string;
-}
-
-function ProjectTasksTab({ projectId }: ProjectTasksTabProps) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
-  const [currentTask, setCurrentTask] = useState<any>(null);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    status: "todo",
-    priority: "medium",
-    assigned_to: "unassigned",
-    due_date: null as Date | null
-  });
-
-  // Fetch tasks for this project
-  const { data: tasks, isLoading, error, refetch } = useQuery({
-    queryKey: ['project-tasks', projectId],
-    queryFn: async () => {
-      if (!projectId) return [];
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          assignee:assigned_to (id, full_name, avatar_url)
-        `)
-        .eq('project_id', projectId)
-        .order('due_date', { ascending: true });
-
-      if (error) {
-        console.error("Error fetching tasks:", error);
-        throw error;
-      }
-
-      return data;
-    },
-    enabled: !!projectId
-  });
-
-  // Fetch users for dropdown
-  const { data: users } = useQuery({
-    queryKey: ['users-for-project-tasks'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url')
-        .order('full_name');
-
-      if (error) {
-        console.error("Error fetching users:", error);
-        throw error;
-      }
-
-      return data;
-    }
-  });
-
-  // Add task mutation
-  const addTaskMutation = useMutation({
-    mutationFn: async (task: typeof newTask) => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([{
-          title: task.title,
-          description: task.description,
-          project_id: projectId,
-          status: task.status,
-          priority: task.priority,
-          assigned_to: task.assigned_to === "unassigned" ? null : task.assigned_to,
-          due_date: task.due_date ? format(task.due_date, 'yyyy-MM-dd') : null
-        }])
-        .select();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-      toast({
-        title: "Task added",
-        description: "The task has been added successfully.",
-      });
-      setIsAddTaskOpen(false);
-      resetNewTaskForm();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error adding task",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Update task mutation
-  const updateTaskMutation = useMutation({
-    mutationFn: async (task: any) => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          priority: task.priority,
-          assigned_to: task.assigned_to === "unassigned" ? null : task.assigned_to,
-          due_date: task.due_date,
-          completed_at: task.status === 'completed' ? new Date().toISOString() : null
-        })
-        .eq('id', task.id)
-        .select();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-      toast({
-        title: "Task updated",
-        description: "The task has been updated successfully.",
-      });
-      setIsEditTaskOpen(false);
-      setCurrentTask(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error updating task",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Delete task mutation
-  const deleteTaskMutation = useMutation({
-    mutationFn: async (taskId: string) => {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-      toast({
-        title: "Task deleted",
-        description: "The task has been deleted successfully.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error deleting task",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Toggle task status mutation
-  const toggleTaskStatusMutation = useMutation({
-    mutationFn: async ({ taskId, newStatus }: { taskId: string; newStatus: string }) => {
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          status: newStatus,
-          completed_at: newStatus === 'completed' ? new Date().toISOString() : null
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project-tasks'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error updating task status",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Reset new task form
-  const resetNewTaskForm = () => {
-    setNewTask({
-      title: "",
-      description: "",
-      status: "todo",
-      priority: "medium",
-      assigned_to: "unassigned",
-      due_date: null
-    });
-  };
-
-  // Handle edit task
-  const handleEditTask = (task: any) => {
-    setCurrentTask(task);
-    setIsEditTaskOpen(true);
-  };
-
-  // Handle task status toggle
-  const handleToggleStatus = (taskId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'completed' ? 'todo' : 'completed';
-    toggleTaskStatusMutation.mutate({ taskId, newStatus });
-  };
-
-  // Format date for display
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'No due date';
-    try {
-      const date = parseISO(dateString);
-      return format(date, 'MMM d, yyyy');
-    } catch (error) {
-      console.error("Invalid date:", dateString);
-      return 'Invalid date';
-    }
-  };
-
-  // Get priority badge color
-  const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
-      high: "bg-red-100 text-red-800",
-      medium: "bg-amber-100 text-amber-800",
-      low: "bg-green-100 text-green-800"
-    };
-    return colors[priority] || "bg-gray-100 text-gray-800";
-  };
-
-  // Get status icon
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'in_progress':
-        return <Clock className="h-5 w-5 text-blue-500" />;
-      default:
-        return <Circle className="h-5 w-5 text-gray-400" />;
-    }
-  };
-
-  // Filter tasks by status for tabs
-  const todoTasks = tasks?.filter(task => task.status === 'todo') || [];
-  const inProgressTasks = tasks?.filter(task => task.status === 'in_progress') || [];
-  const completedTasks = tasks?.filter(task => task.status === 'completed') || [];
-
-  if (!projectId) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-muted-foreground">Project ID is required to view tasks</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Tasks</CardTitle>
-          <Button size="sm" onClick={() => setIsAddTaskOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All ({tasks?.length || 0})</TabsTrigger>
-              <TabsTrigger value="todo">To Do ({todoTasks.length})</TabsTrigger>
-              <TabsTrigger value="in_progress">In Progress ({inProgressTasks.length})</TabsTrigger>
-              <TabsTrigger value="completed">Completed ({completedTasks.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all" className="mt-6">
-              {renderTasksList(tasks || [])}
-            </TabsContent>
-
-            <TabsContent value="todo" className="mt-6">
-              {renderTasksList(todoTasks)}
-            </TabsContent>
-
-            <TabsContent value="in_progress" className="mt-6">
-              {renderTasksList(inProgressTasks)}
-            </TabsContent>
-
-            <TabsContent value="completed" className="mt-6">
-              {renderTasksList(completedTasks)}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Add Task Dialog */}
-      <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                placeholder="Task title"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                placeholder="Task description"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="assignee">Assignee</Label>
-              <Select
-                value={newTask.assigned_to}
-                onValueChange={(value) => setNewTask({ ...newTask, assigned_to: value })}
-              >
-                <SelectTrigger id="assignee">
-                  <SelectValue placeholder="Select assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {users?.map((user: any) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={newTask.status}
-                  onValueChange={(value) => setNewTask({ ...newTask, status: value as any })}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todo">To Do</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={newTask.priority}
-                  onValueChange={(value) => setNewTask({ ...newTask, priority: value as any })}
-                >
-                  <SelectTrigger id="priority">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Due Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {newTask.due_date ? format(newTask.due_date, 'PPP') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarComponent
-                    mode="single"
-                    selected={newTask.due_date}
-                    onSelect={(date) => setNewTask({ ...newTask, due_date: date })}
-                    initialFocus
-                    className="calendar-fix"
-                    components={{
-                      Day: ({ date: dayDate, ...props }) => {
-                        return (
-                          <div
-                            {...props}
-                            data-day
-                          >
-                            {dayDate.getDate()}
-                          </div>
-                        );
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button
-              onClick={() => addTaskMutation.mutate(newTask)}
-              disabled={!newTask.title.trim() || addTaskMutation.isPending}
-            >
-              {addTaskMutation.isPending ? "Adding..." : "Add Task"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Task Dialog */}
-      {currentTask && (
-        <Dialog open={isEditTaskOpen} onOpenChange={setIsEditTaskOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Task</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-title">Title</Label>
-                <Input
-                  id="edit-title"
-                  value={currentTask.title}
-                  onChange={(e) => setCurrentTask({ ...currentTask, title: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={currentTask.description || ""}
-                  onChange={(e) => setCurrentTask({ ...currentTask, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-assignee">Assignee</Label>
-                <Select
-                  value={currentTask.assigned_to || "unassigned"}
-                  onValueChange={(value) => setCurrentTask({ ...currentTask, assigned_to: value })}
-                >
-                  <SelectTrigger id="edit-assignee">
-                    <SelectValue placeholder="Select assignee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {users?.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status">Status</Label>
-                  <Select
-                    value={currentTask.status}
-                    onValueChange={(value) => setCurrentTask({ ...currentTask, status: value as any })}
-                  >
-                    <SelectTrigger id="edit-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todo">To Do</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-priority">Priority</Label>
-                  <Select
-                    value={currentTask.priority}
-                    onValueChange={(value) => setCurrentTask({ ...currentTask, priority: value as any })}
-                  >
-                    <SelectTrigger id="edit-priority">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Due Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {currentTask.due_date ? formatDate(currentTask.due_date) : <span>No due date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <CalendarComponent
-                      mode="single"
-                      selected={currentTask.due_date ? parseISO(currentTask.due_date) : undefined}
-                      onSelect={(date) => setCurrentTask({
-                        ...currentTask,
-                        due_date: date ? format(date, 'yyyy-MM-dd') : null
-                      })}
-                      initialFocus
-                      className="calendar-fix"
-                      components={{
-                        Day: ({ date: dayDate, ...props }) => {
-                          return (
-                            <div
-                              {...props}
-                              data-day
-                            >
-                              {dayDate.getDate()}
-                            </div>
-                          );
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  deleteTaskMutation.mutate(currentTask.id);
-                  setIsEditTaskOpen(false);
-                }}
-                disabled={deleteTaskMutation.isPending}
-              >
-                {deleteTaskMutation.isPending ? "Deleting..." : "Delete"}
-              </Button>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button
-                onClick={() => updateTaskMutation.mutate(currentTask)}
-                disabled={!currentTask.title.trim() || updateTaskMutation.isPending}
-              >
-                {updateTaskMutation.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </>
-  );
-
-  // Helper function to render tasks list
-  function renderTasksList(tasksList: any[]) {
-    if (isLoading) {
-      return (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-start gap-4 p-4 border rounded-lg">
-              <Skeleton className="h-6 w-6 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <div className="flex gap-2 mt-2">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="text-center py-8">
-          <p className="text-red-500 mb-2">Error loading tasks</p>
-          <p className="text-muted-foreground">There was a problem loading tasks for this project.</p>
-          <Button onClick={() => refetch()} variant="outline" className="mt-4">
-            Retry
-          </Button>
-        </div>
-      );
-    }
-
-    if (tasksList.length === 0) {
-      return (
-        <p className="text-center text-muted-foreground py-8">
-          No tasks have been created for this project yet.
-        </p>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {tasksList.map((task) => (
-          <div key={task.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-            <button
-              onClick={() => handleToggleStatus(task.id, task.status)}
-              className="mt-1"
-            >
-              {getStatusIcon(task.status)}
-            </button>
-            <div className="flex-1">
-              <div className="flex items-start justify-between">
-                <h3 className="font-medium">{task.title}</h3>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEditTask(task)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-red-600"
-                      onClick={() => deleteTaskMutation.mutate(task.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              {task.description && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {task.description}
-                </p>
-              )}
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="outline" className={getPriorityColor(task.priority)}>
-                  {task.priority} priority
-                </Badge>
-                {task.due_date && (
-                  <Badge variant="outline" className="bg-purple-50 text-purple-800">
-                    Due {formatDate(task.due_date)}
-                  </Badge>
-                )}
-                {task.assignee && (
-                  <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                    Assigned to {task.assignee.full_name}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 }

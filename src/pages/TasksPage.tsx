@@ -58,15 +58,15 @@ interface Task {
   completed_at: string | null;
   created_at: string;
   // These fields are not in the database but used in the UI
-  description?: string; // Not in database, added in UI
-  status?: "todo" | "in_progress" | "completed"; // Not in database, derived from completed_at
-  priority?: "low" | "medium" | "high"; // Not in database, default to medium
+  description?: string;
+  status: "todo" | "in_progress" | "completed";
+  priority: "low" | "medium" | "high";
   updated_at?: string;
   project?: {
     id: string;
     name: string;
   };
-  assigned_users?: User[];
+  assigned_users: User[];
 }
 
 // Define User type
@@ -80,6 +80,62 @@ interface User {
 interface Project {
   id: string;
   name: string;
+}
+
+// Define database response type
+interface TaskResponse {
+  id: string;
+  title: string;
+  project_id: string;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  description: string | null;
+  updated_at: string | null;
+  projects: {
+    id: string;
+    name: string;
+  } | null;
+  user_tasks: Array<{
+    team_members: {
+      id: string;
+      full_name: string;
+      avatar_url: string | null;
+    } | null;
+  }>;
+}
+
+// Define database response types
+interface TeamMember {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+}
+
+interface UserTaskAssignment {
+  task_id: string;
+  user_id: string;
+  team_members: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
+// Define database response types
+interface UserTaskWithTeamMember {
+  task_id: string;
+  user_id: string;
+  team_members: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
+interface SupabaseResponse<T> {
+  data: T | null;
+  error: any;
 }
 
 export default function TasksPage() {
@@ -113,119 +169,90 @@ export default function TasksPage() {
     queryKey: ['tasks'],
     queryFn: async () => {
       try {
-        // Fetch tasks
+        console.log("Fetching tasks with assignments...");
+        
+        // First fetch tasks with their projects
         const { data: taskData, error: taskError } = await supabase
           .from('tasks')
           .select(`
-            id,
-            title,
-            project_id,
-            due_date,
-            completed_at,
-            created_at,
-            project:project_id (id, name)
+            *,
+            projects:project_id (
+              id,
+              name
+            )
           `)
           .order('created_at', { ascending: false });
 
-        if (taskError) throw taskError;
-
-        // If no tasks, return empty array
-        if (!taskData || taskData.length === 0) {
-          return [] as Task[];
+        if (taskError) {
+          console.error("Error fetching tasks:", taskError);
+          throw taskError;
         }
 
-        // Try to fetch user assignments
-        let tasksWithUsers = [...taskData] as Task[];
+        // Then fetch all user assignments with team member details
+        const { data: userAssignments, error: assignmentsError }: SupabaseResponse<UserTaskWithTeamMember[]> = await supabase
+          .from('user_tasks')
+          .select(`
+            task_id,
+            user_id,
+            team_members!inner (
+              id,
+              full_name,
+              avatar_url
+            )
+          `);
 
-        try {
-          // Check if user_tasks table exists
-          const { error: tableCheckError } = await supabase
-            .from('user_tasks')
-            .select('id')
-            .limit(1);
-
-          if (!tableCheckError) {
-            // Fetch all user assignments for these tasks
-            const { data: userTasks, error: userTasksError } = await supabase
-              .from('user_tasks')
-              .select('task_id, user_id')
-              .in('task_id', taskData.map(t => t.id));
-
-            if (!userTasksError && userTasks && userTasks.length > 0) {
-              // Fetch all user details
-              const userIds = [...new Set(userTasks.map(ut => ut.user_id))];
-
-              // Try to fetch user details from both team_members and profiles tables
-              let userDetails = [];
-
-              // First try team_members
-              const { data: teamMemberDetails, error: teamMemberError } = await supabase
-                .from('team_members')
-                .select('id, full_name, avatar_url')
-                .in('id', userIds);
-
-              if (!teamMemberError && teamMemberDetails) {
-                userDetails = [...teamMemberDetails];
-              }
-
-              // Then try profiles for any remaining IDs
-              const remainingIds = userIds.filter(id =>
-                !userDetails.some(user => user.id === id)
-              );
-
-              if (remainingIds.length > 0) {
-                const { data: profileDetails, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('id, full_name, avatar_url')
-                  .in('id', remainingIds);
-
-                if (!profileError && profileDetails) {
-                  userDetails = [...userDetails, ...profileDetails];
-                }
-              }
-
-              if (userDetails && userDetails.length > 0) {
-                // Create a map of users by ID
-                const userMap: Record<string, User> = {};
-                userDetails.forEach(user => {
-                  userMap[user.id] = user;
-                });
-
-                // Group user assignments by task
-                const taskUserMap: Record<string, User[]> = {};
-                userTasks.forEach(ut => {
-                  if (!taskUserMap[ut.task_id]) {
-                    taskUserMap[ut.task_id] = [];
-                  }
-
-                  const user = userMap[ut.user_id];
-                  if (user) {
-                    taskUserMap[ut.task_id].push(user);
-                  }
-                });
-
-                // Add users to tasks
-                tasksWithUsers = tasksWithUsers.map(task => ({
-                  ...task,
-                  assigned_users: taskUserMap[task.id] || []
-                }));
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching user assignments:", err);
-          // Continue with tasks without user assignments
+        if (assignmentsError) {
+          console.error("Error fetching user assignments:", assignmentsError);
+          throw assignmentsError;
         }
 
-        return tasksWithUsers;
+        // Create a map of task IDs to their assigned users
+        const taskAssignmentsMap = new Map<string, User[]>();
+        
+        if (userAssignments) {
+          userAssignments.forEach(assignment => {
+            const user: User = {
+              id: assignment.team_members.id,
+              full_name: assignment.team_members.full_name,
+              avatar_url: assignment.team_members.avatar_url
+            };
+
+            const existingUsers = taskAssignmentsMap.get(assignment.task_id) || [];
+            taskAssignmentsMap.set(assignment.task_id, [...existingUsers, user]);
+          });
+        }
+
+        // Convert database tasks to our Task interface
+        const convertedTasks: Task[] = (taskData || []).map(task => {
+          const assignedUsers = taskAssignmentsMap.get(task.id) || [];
+          console.log(`Task ${task.id} assigned users:`, assignedUsers);
+
+          return {
+            id: task.id,
+            title: task.title,
+            project_id: task.project_id,
+            due_date: task.due_date,
+            completed_at: task.completed_at,
+            created_at: task.created_at,
+            description: task.description,
+            updated_at: task.updated_at,
+            project: task.projects,
+            assigned_users: assignedUsers,
+            status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
+            priority: 'medium' as "low" | "medium" | "high"
+          };
+        });
+
+        console.log("Converted tasks:", convertedTasks);
+        return convertedTasks;
       } catch (error: any) {
-        console.error("Error fetching tasks:", error);
+        console.error("Error in task query:", error);
         toast({
           title: "Error",
           description: `Failed to load tasks: ${error.message}`,
           variant: "destructive",
         });
-        return [];
+        return [] as Task[];
       }
     }
   });
@@ -311,15 +338,15 @@ export default function TasksPage() {
       try {
         console.log("Starting task creation with:", task);
 
-        // Map assigned_users (User[]) to user IDs for backend
+        // Map assigned_users to user IDs
         const assignedUserIds = Array.isArray(task.assigned_users)
-          ? task.assigned_users.map(u => u.id)
+          ? task.assigned_users.map(u => typeof u === 'string' ? u : u.id)
           : [];
 
-        console.log("Team members to assign (filtered):", assignedUserIds);
+        console.log("Team members to assign:", assignedUserIds);
 
         // First, insert the task
-        const { data, error } = await supabase
+        const { data: newTaskData, error: taskError } = await supabase
           .from('tasks')
           .insert([{
             title: task.title,
@@ -327,116 +354,54 @@ export default function TasksPage() {
             due_date: task.due_date ? format(task.due_date, 'yyyy-MM-dd') : null,
             completed_at: task.status === 'completed' ? new Date().toISOString() : null
           }])
-          .select();
+          .select()
+          .single();
 
-        if (error) {
-          console.error("Error inserting task:", error);
-          throw error;
+        if (taskError || !newTaskData) {
+          console.error("Error inserting task:", taskError);
+          throw taskError || new Error("Failed to create task");
         }
 
-        console.log("Task created successfully:", data);
+        console.log("Task created successfully:", newTaskData);
 
         // If we have assigned users, create user_task entries
-        if (assignedUserIds.length > 0 && data && data[0]) {
-          const taskId = data[0].id;
-          console.log("Adding user assignments for task:", taskId);
-          console.log("Assigned users:", assignedUserIds);
+        if (assignedUserIds.length > 0) {
+          const userTaskEntries = assignedUserIds.map(userId => ({
+            task_id: newTaskData.id,
+            user_id: userId
+          }));
 
-          try {
-            // First check if the user_tasks table exists
-            const { error: tableCheckError } = await supabase
-              .from('user_tasks')
-              .select('id')
-              .limit(1);
+          const { error: assignmentError } = await supabase
+            .from('user_tasks')
+            .insert(userTaskEntries);
 
-            if (tableCheckError) {
-              console.warn("user_tasks table might not exist yet:", tableCheckError.message);
-              console.log("Creating user_tasks table...");
-
-              // Try to create the user_tasks table if it doesn't exist
-              // Modified to NOT use foreign key constraints so it can work with both profiles and team_members
-              const createTableQuery = `
-                CREATE TABLE IF NOT EXISTS public.user_tasks (
-                  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                  user_id UUID NOT NULL,
-                  task_id UUID REFERENCES public.tasks(id) ON DELETE CASCADE,
-                  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                );
-              `;
-
-              await (supabase.rpc as any)("execute_sql", { query: createTableQuery });
-            }
-
-            // Create an array of user_task objects to insert
-            const userTaskEntries = assignedUserIds.map(userId => ({
-              user_id: userId,
-              task_id: taskId
-            }));
-
-            console.log("Preparing to insert user task entries:", userTaskEntries);
-
-            if (userTaskEntries.length > 0) {
-              // Try one-by-one insertion which is more reliable
-              for (const userId of assignedUserIds) {
-                console.log("Adding assignment for user:", userId);
-
-                const { error: singleInsertError } = await supabase
-                  .from('user_tasks')
-                  .insert({
-                    user_id: userId,
-                    task_id: taskId
-                  });
-
-                if (singleInsertError) {
-                  console.error(`Error adding user task assignment for user ${userId}:`, singleInsertError);
-                } else {
-                  console.log(`Successfully added assignment for user ${userId}`);
-                }
-              }
-            }
-          } catch (userTaskError) {
-            console.error("Error handling user task assignments:", userTaskError);
-            // Continue even if user assignments fail - the task itself was created
+          if (assignmentError) {
+            console.error("Error assigning users to task:", assignmentError);
+            // Don't throw here, as the task was created successfully
           }
-        } else {
-          console.log("No team members to assign");
         }
 
-        return data;
+        return newTaskData;
       } catch (error) {
         console.error("Unexpected error in task creation:", error);
         throw error;
       }
     },
     onSuccess: () => {
-      try {
-        console.log("Task added successfully, invalidating queries");
-        queryClient.invalidateQueries({ queryKey: ['tasks'] });
-
-        console.log("Showing success toast");
-        toast({
-          title: "Task added",
-          description: "The task has been added successfully.",
-        });
-
-        console.log("Closing dialog and resetting form");
-        setIsAddTaskOpen(false);
-        resetNewTaskForm();
-      } catch (error) {
-        console.error("Error in onSuccess handler:", error);
-      }
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast({
+        title: "Task added",
+        description: "The task has been added successfully.",
+      });
+      setIsAddTaskOpen(false);
+      resetNewTaskForm();
     },
     onError: (error: any) => {
-      try {
-        console.error("Error in task mutation:", error);
-        toast({
-          title: "Error adding task",
-          description: error.message || "An unknown error occurred",
-          variant: "destructive",
-        });
-      } catch (toastError) {
-        console.error("Error showing error toast:", toastError);
-      }
+      toast({
+        title: "Error adding task",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -444,22 +409,13 @@ export default function TasksPage() {
   const updateTaskMutation = useMutation({
     mutationFn: async (task: Task) => {
       try {
-        console.log("Updating task with details:", {
-          id: task.id,
-          title: task.title,
-          project_id: task.project_id,
-          due_date: task.due_date,
-          status: task.status,
-          assigned_users: task.assigned_users?.map(u => `${u.id} (${u.full_name})`)
-        });
-
-        // Map assigned_users (User[]) to user IDs for backend
+        // Map assigned_users to user IDs
         const assignedUserIds = Array.isArray(task.assigned_users)
           ? task.assigned_users.map(u => u.id)
           : [];
 
         // First, update the task
-        const { data, error } = await supabase
+        const { data: updatedTask, error: taskError } = await supabase
           .from('tasks')
           .update({
             title: task.title,
@@ -468,82 +424,41 @@ export default function TasksPage() {
             completed_at: task.status === 'completed' ? new Date().toISOString() : null
           })
           .eq('id', task.id)
-          .select();
+          .select()
+          .single();
 
-        if (error) {
-          console.error("Error updating task:", error);
-          throw error;
+        if (taskError || !updatedTask) {
+          console.error("Error updating task:", taskError);
+          throw taskError || new Error("Failed to update task");
         }
 
-        try {
-          // First check if the user_tasks table exists
-          const { error: tableCheckError } = await supabase
+        // Delete existing assignments
+        const { error: deleteError } = await supabase
+          .from('user_tasks')
+          .delete()
+          .eq('task_id', task.id);
+
+        if (deleteError) {
+          console.error("Error deleting existing assignments:", deleteError);
+        }
+
+        // Add new assignments if there are any
+        if (assignedUserIds.length > 0) {
+          const userTaskEntries = assignedUserIds.map(userId => ({
+            task_id: task.id,
+            user_id: userId
+          }));
+
+          const { error: assignmentError } = await supabase
             .from('user_tasks')
-            .select('id')
-            .limit(1);
+            .insert(userTaskEntries);
 
-          if (tableCheckError) {
-            console.warn("user_tasks table might not exist yet:", tableCheckError.message);
-            console.log("Creating user_tasks table...");
-
-            // Try to create the user_tasks table if it doesn't exist
-            // Modified to NOT use foreign key constraints so it can work with both profiles and team_members
-            const createTableQuery = `
-              CREATE TABLE IF NOT EXISTS public.user_tasks (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                user_id UUID NOT NULL,
-                task_id UUID REFERENCES public.tasks(id) ON DELETE CASCADE,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-              );
-            `;
-
-            await (supabase.rpc as any)("execute_sql", { query: createTableQuery });
-          } else {
-            // Always delete existing assignments first
-            console.log("Deleting existing user task assignments for task:", task.id);
-            const { error: deleteError } = await supabase
-              .from('user_tasks')
-              .delete()
-              .eq('task_id', task.id);
-
-            if (deleteError) {
-              console.error("Error deleting existing user task assignments:", deleteError);
-              // Continue even if delete fails
-            } else {
-              console.log("Successfully deleted existing user task assignments");
-            }
+          if (assignmentError) {
+            console.error("Error updating task assignments:", assignmentError);
           }
-
-          // Then add new assignments
-          if (assignedUserIds.length > 0) {
-            console.log("Creating new user task assignments for users:",
-              assignedUserIds.map(id => `${id} (User ${id})`));
-
-            for (const userId of assignedUserIds) {
-              console.log(`Adding assignment for user ${userId}`);
-              const { error: insertError } = await supabase
-                .from('user_tasks')
-                .insert({
-                  user_id: userId,
-                  task_id: task.id
-                });
-
-              if (insertError) {
-                console.error(`Error adding user task assignment for user ${userId}:`, insertError);
-                // Continue with other assignments even if one fails
-              } else {
-                console.log(`Successfully added assignment for user ${userId}`);
-              }
-            }
-          } else {
-            console.log("No team members to assign");
-          }
-        } catch (userTaskError) {
-          console.error("Error handling user task assignments:", userTaskError);
-          // Continue even if user assignments fail - the task itself was updated
         }
 
-        return data;
+        return updatedTask;
       } catch (error) {
         console.error("Unexpected error in task update:", error);
         throw error;
@@ -671,12 +586,21 @@ export default function TasksPage() {
     }
 
     try {
-      // Make sure we have the assigned_users array
-      const taskWithUsers = {
+      console.log("Opening edit dialog for task:", task);
+      console.log("Assigned users:", task.assigned_users);
+
+      // Make sure we have the assigned_users array and all required fields
+      const taskToEdit: Task = {
         ...task,
-        assigned_users: Array.isArray(task.assigned_users) ? task.assigned_users : []
+        assigned_users: Array.isArray(task.assigned_users) ? task.assigned_users : [],
+        status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
+        priority: (task.priority || 'medium') as "low" | "medium" | "high"
       };
-      setCurrentTask(taskWithUsers);
+
+      console.log("Prepared task for editing:", taskToEdit);
+      console.log("Assigned users after preparation:", taskToEdit.assigned_users);
+
+      setCurrentTask(taskToEdit);
       setIsEditTaskOpen(true);
     } catch (error) {
       console.error("Error in handleEditTask:", error);
@@ -1489,8 +1413,16 @@ export default function TasksPage() {
                     {users && users.length > 0 ? (
                       users.map((user) => {
                         if (!user || !user.id) return null;
-                        const assignedUsers = Array.isArray(currentTask?.assigned_users) ? currentTask.assigned_users : [];
-                        const isSelected = assignedUsers.some(u => u.id === user.id);
+                        // Check if the user is in the assigned_users array by comparing IDs
+                        const isSelected = currentTask?.assigned_users?.some(assignedUser => 
+                          assignedUser && assignedUser.id === user.id
+                        ) || false;
+
+                        console.log(`Checking user ${user.full_name} (${user.id}):`, {
+                          isSelected,
+                          currentTaskUsers: currentTask?.assigned_users?.map(u => `${u.full_name} (${u.id})`)
+                        });
+
                         return (
                           <div
                             key={user.id}
@@ -1501,12 +1433,20 @@ export default function TasksPage() {
                             }`}
                             onClick={() => {
                               if (!currentTask) return;
+                              
+                              console.log('Current assigned users before update:', currentTask.assigned_users);
+                              
                               let updatedUsers: User[];
                               if (isSelected) {
-                                updatedUsers = assignedUsers.filter(u => u.id !== user.id);
+                                // Remove user if already selected
+                                updatedUsers = (currentTask.assigned_users || []).filter(u => u.id !== user.id);
                               } else {
-                                updatedUsers = [...assignedUsers, user];
+                                // Add user if not selected
+                                updatedUsers = [...(currentTask.assigned_users || []), user];
                               }
+                              
+                              console.log('Updated assigned users:', updatedUsers);
+                              
                               setCurrentTask({
                                 ...currentTask,
                                 assigned_users: updatedUsers
