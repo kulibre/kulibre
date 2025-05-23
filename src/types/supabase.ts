@@ -661,44 +661,47 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          project_id: string
           task_id: string | null
+          project_id: string
           description: string | null
-          start_time: string
-          end_time: string | null
-          duration: number | null
+          started_at: string
+          duration: number
           created_at: string
           updated_at: string
+          task?: {
+            title: string
+          } | null
+          project?: {
+            name: string
+          } | null
         }
         Insert: {
           id?: string
           user_id: string
-          project_id: string
           task_id?: string | null
+          project_id: string
           description?: string | null
-          start_time: string
-          end_time?: string | null
-          duration?: number | null
+          started_at: string
+          duration: number
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           user_id?: string
-          project_id?: string
           task_id?: string | null
+          project_id?: string
           description?: string | null
-          start_time?: string
-          end_time?: string | null
-          duration?: number | null
+          started_at?: string
+          duration?: number
           created_at?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "time_entries_project_id_fkey"
-            columns: ["project_id"]
-            referencedRelation: "projects"
+            foreignKeyName: "time_entries_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -708,9 +711,9 @@ export interface Database {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "time_entries_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
+            foreignKeyName: "time_entries_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           }
         ]

@@ -42,9 +42,6 @@ import Terms from "./pages/Terms";
 import Security from "./pages/Security";
 import RefundPolicy from "./pages/RefundPolicy";
 
-// Import Analytics page
-import Analytics from "./pages/Analytics";
-
 export function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -85,8 +82,6 @@ export default function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/security" element={<Security />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
-
-            <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
 
             <Route path="/dashboard" element={<Layout><Index /></Layout>} />
             <Route path="/projects" element={<Layout><ProjectsPageSimple /></Layout>} />

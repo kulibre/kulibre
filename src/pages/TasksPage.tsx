@@ -409,10 +409,15 @@ export default function TasksPage() {
   const updateTaskMutation = useMutation({
     mutationFn: async (task: Task) => {
       try {
+        console.log("Update task mutation called with task:", task);
+        console.log("Assigned users in update mutation:", task.assigned_users);
+        
         // Map assigned_users to user IDs
         const assignedUserIds = Array.isArray(task.assigned_users)
           ? task.assigned_users.map(u => u.id)
           : [];
+        
+        console.log("Mapped assigned user IDs:", assignedUserIds);
 
         // First, update the task
         const { data: updatedTask, error: taskError } = await supabase
@@ -590,9 +595,12 @@ export default function TasksPage() {
       console.log("Assigned users:", task.assigned_users);
 
       // Make sure we have the assigned_users array and all required fields
+      // Ensure we're creating a deep copy of the assigned_users array to prevent reference issues
       const taskToEdit: Task = {
         ...task,
-        assigned_users: Array.isArray(task.assigned_users) ? task.assigned_users : [],
+        assigned_users: Array.isArray(task.assigned_users) 
+          ? [...task.assigned_users.map(user => ({...user}))] 
+          : [],
         status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
         priority: (task.priority || 'medium') as "low" | "medium" | "high"
       };
@@ -746,8 +754,20 @@ export default function TasksPage() {
     console.log("Task ID effect running");
     // Open task edit dialog when task ID is in URL
     if (taskIdFromUrl && tasks && tasks.length > 0) {
-      const taskToEdit = tasks.find(task => task.id === taskIdFromUrl);
-      if (taskToEdit) {
+      const task = tasks.find(task => task.id === taskIdFromUrl);
+      if (task) {
+        // Make sure we have the assigned_users array and all required fields
+        // Create a deep copy to ensure we don't have reference issues
+        const taskToEdit: Task = {
+          ...task,
+          assigned_users: Array.isArray(task.assigned_users) 
+            ? [...task.assigned_users.map(user => ({...user}))] 
+            : [],
+          status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
+          priority: (task.priority || 'medium') as "low" | "medium" | "high"
+        };
+        
+        console.log("Opening task from URL with assigned users:", taskToEdit.assigned_users);
         setCurrentTask(taskToEdit);
         setIsEditTaskOpen(true);
       }

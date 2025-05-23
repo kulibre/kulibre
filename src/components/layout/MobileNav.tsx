@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
-  BarChart2, 
   Calendar, 
   CheckSquare, 
   File, 
@@ -96,12 +95,6 @@ export function MobileNav() {
               icon={<Calendar className="w-5 h-5" />}
               href="/calendar"
               label="Calendar"
-              onClick={() => setOpen(false)}
-            />
-            <MobileNavItem
-              icon={<BarChart2 className="w-5 h-5" />}
-              href="/analytics"
-              label="Analytics"
               onClick={() => setOpen(false)}
             />
             <MobileNavItem
