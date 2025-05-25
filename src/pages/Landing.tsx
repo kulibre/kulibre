@@ -14,7 +14,10 @@ import {
   Users,
   BarChart2,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  FileText,
+  UserPlus,
+  Bell
 } from 'lucide-react';
 
 // Enhanced CSS for animations and effects
@@ -756,34 +759,34 @@ export default function Landing() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children">
               <FeatureCard
-                icon={<Calendar className="h-10 w-10 text-creatively-purple" />}
-                title="Visual Project Planning"
-                description="Intuitive Kanban boards and Gantt charts that help you visualize project timelines and dependencies."
+                icon={<BarChart2 className="h-10 w-10 text-creatively-purple" />}
+                title="Project Management Dashboard"
+                description="Create, organize, and manage multiple projects with detailed descriptions, deadlines, and priorities."
               />
               <FeatureCard
                 icon={<Users className="h-10 w-10 text-creatively-orange" />}
+                title="Task Assignment & Tracking"
+                description="Assign tasks to specific team members, track progress, set deadlines, and get real-time updates."
+              />
+              <FeatureCard
+                icon={<FileText className="h-10 w-10 text-creatively-yellow" />}
+                title="File Sharing & Storage"
+                description="Upload, manage, and share documents and assets for each project in a secure file management system."
+              />
+              <FeatureCard
+                icon={<Calendar className="h-10 w-10 text-creatively-blue" />}
+                title="Smart Calendar Integration"
+                description="Plan and track events or deadlines using an intuitive calendar interface—schedule meetings, launches, and milestones."
+              />
+              <FeatureCard
+                icon={<UserPlus className="h-10 w-10 text-creatively-green" />}
                 title="Team Collaboration"
-                description="Real-time communication, file sharing, and task assignment to keep everyone on the same page."
+                description="Add and manage team members with role-based access, profile settings, and direct communication tools."
               />
               <FeatureCard
-                icon={<Zap className="h-10 w-10 text-creatively-yellow" />}
-                title="Automated Workflows"
-                description="Create custom workflows that automate repetitive tasks and keep projects moving forward."
-              />
-              <FeatureCard
-                icon={<BarChart2 className="h-10 w-10 text-creatively-blue" />}
-                title="Advanced Analytics"
-                description="Gain insights into team performance, project profitability, and resource allocation."
-              />
-              <FeatureCard
-                icon={<CheckCircle className="h-10 w-10 text-creatively-green" />}
-                title="Client Approvals"
-                description="Streamline the review and approval process with clients for faster feedback cycles."
-              />
-              <FeatureCard
-                icon={<DollarSign className="h-10 w-10 text-creatively-pink" />}
-                title="Budget Tracking"
-                description="Monitor project budgets and expenses to keep your projects profitable."
+                icon={<Bell className="h-10 w-10 text-creatively-pink" />}
+                title="Real-Time Notifications"
+                description="Get instant alerts on task updates, new files, or upcoming events to stay on top of your workflow."
               />
             </div>
           </div>
@@ -812,23 +815,23 @@ export default function Landing() {
               <div className="space-y-16 stagger-children">
                 <StepItem
                   number="1"
-                  title="Set up your workspace"
-                  description="Create your team workspace and invite team members to collaborate on projects."
+                  title="Create a Project"
+                  description="Start by adding a new project and entering key details like name, description, and deadline."
                 />
                 <StepItem
                   number="2"
-                  title="Create your first project"
-                  description="Use our templates or start from scratch to set up your project structure."
+                  title="Build Your Team"
+                  description="Invite your team members to collaborate, assign roles, and define responsibilities."
                 />
                 <StepItem
                   number="3"
-                  title="Assign tasks and track progress"
-                  description="Break down projects into manageable tasks and track progress in real-time."
+                  title="Assign Tasks & Upload Files"
+                  description="Distribute tasks to the team, upload relevant files, and keep everything centralized."
                 />
                 <StepItem
                   number="4"
-                  title="Collaborate and get feedback"
-                  description="Share work with clients, collect feedback, and get approvals all in one place."
+                  title="Track Progress & Meet Deadlines"
+                  description="Use the dashboard and calendar to stay updated, monitor progress, and complete projects on time."
                 />
               </div>
             </div>

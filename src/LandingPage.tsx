@@ -11,33 +11,33 @@ export const LandingPage = () => {
 
       <main className="landing-main">
         <section className="feature-card hover-effect">
-          <h2>Project Management</h2>
-          <p>Organize projects with intuitive boards and detailed project views</p>
+          <h2>Smart Project Management</h2>
+          <p>Create and manage multiple projects with detailed views, progress tracking, and team assignments</p>
         </section>
         
         <section className="feature-card hover-effect">
-          <h2>Task Tracking</h2>
-          <p>Create, assign, and monitor tasks with customizable workflows</p>
+          <h2>Advanced Task Tracking</h2>
+          <p>Organize tasks with custom workflows, priorities, and real-time status updates</p>
         </section>
         
         <section className="feature-card hover-effect">
-          <h2>Team Collaboration</h2>
-          <p>Connect your team members and streamline communication</p>
+          <h2>Team Collaboration Hub</h2>
+          <p>Invite team members, manage permissions, and collaborate seamlessly on projects</p>
         </section>
 
         <section className="feature-card hover-effect">
-          <h2>Calendar Integration</h2>
-          <p>Visualize project timelines and manage deadlines effectively</p>
+          <h2>Interactive Calendar</h2>
+          <p>Plan schedules, set deadlines, and visualize project timelines with our dynamic calendar</p>
         </section>
 
         <section className="feature-card hover-effect">
-          <h2>File Storage</h2>
-          <p>Centralize project files and documents in one secure location</p>
+          <h2>Secure File Management</h2>
+          <p>Upload, organize, and share project files with your team in a secure environment</p>
         </section>
 
         <section className="feature-card hover-effect">
-          <h2>Customizable Dashboard</h2>
-          <p>Get a comprehensive overview of all your projects and tasks</p>
+          <h2>User Settings & Customization</h2>
+          <p>Personalize your workspace and manage account preferences for optimal productivity</p>
         </section>
       </main>
 
