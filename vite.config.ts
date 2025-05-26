@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    https: {
+      key: undefined,
+      cert: undefined
+    }
   },
   build: {
     outDir: "dist",
