@@ -1,4 +1,3 @@
-
 import { Clock, CheckSquare, AlertTriangle, FolderKanban, ArrowRight } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { TaskCard } from "@/components/dashboard/TaskCard";
@@ -405,17 +404,26 @@ export default function Index() {
 
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Tasks Due Today</CardTitle>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/tasks">See All Tasks</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/tasks?action=add">Add Task</Link>
-                  </Button>
+              <CardTitle>Team Workload</CardTitle>
+              <CardDescription>Tasks assigned per team member (total and completed)</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              {isLoadingTeamWorkload ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Loading team workload data...</p>
                 </div>
-              </div>
+              ) : (
+                <TeamWorkloadChart data={teamWorkload || []} />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tasks Due Today</CardTitle>
+              <CardDescription>Tasks assigned to you today</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {isLoadingTasks ? (
@@ -450,24 +458,6 @@ export default function Index() {
                 </>
               ) : (
                 <p className="text-center text-muted-foreground py-4">No tasks due today. Enjoy your day!</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Workload</CardTitle>
-              <CardDescription>Tasks assigned per team member (total and completed)</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              {isLoadingTeamWorkload ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Loading team workload data...</p>
-                </div>
-              ) : (
-                <TeamWorkloadChart data={teamWorkload || []} />
               )}
             </CardContent>
           </Card>
