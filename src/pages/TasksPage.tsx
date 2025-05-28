@@ -594,13 +594,25 @@ export default function TasksPage() {
       console.log("Opening edit dialog for task:", task);
       console.log("Assigned users:", task.assigned_users);
 
+      // Convert assigned_users to proper User objects if they're just IDs
+      let processedAssignedUsers: User[] = [];
+      
+      if (Array.isArray(task.assigned_users)) {
+        // If assigned_users contains string IDs, convert to User objects
+        if (task.assigned_users.length > 0 && typeof task.assigned_users[0] === 'string') {
+          processedAssignedUsers = users?.filter(user => 
+            task.assigned_users.includes(user.id)
+          ) || [];
+        } else {
+          // If already User objects, use them directly
+          processedAssignedUsers = [...task.assigned_users.map(user => ({...user}))];
+        }
+      }
+
       // Make sure we have the assigned_users array and all required fields
-      // Ensure we're creating a deep copy of the assigned_users array to prevent reference issues
       const taskToEdit: Task = {
         ...task,
-        assigned_users: Array.isArray(task.assigned_users) 
-          ? [...task.assigned_users.map(user => ({...user}))] 
-          : [],
+        assigned_users: processedAssignedUsers,
         status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
         priority: (task.priority || 'medium') as "low" | "medium" | "high"
       };

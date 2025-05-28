@@ -42,6 +42,9 @@ import Terms from "./pages/Terms";
 import Security from "./pages/Security";
 import RefundPolicy from "./pages/RefundPolicy";
 
+// Add this to your imports
+import Analytics from "./pages/Analytics";
+
 export function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -77,22 +80,23 @@ export default function App() {
             <Route path="/support" element={<Support />} />
             <Route path="/faq" element={<FAQ />} />
 
+            {/* Dashboard routes */}
+            <Route path="/dashboard" element={<Layout><Index /></Layout>} />
+            <Route path="/projects" element={<Layout><ProjectsPageSimple /></Layout>} />
+            <Route path="/projects/:id" element={<Layout><ProjectDetailsPage /></Layout>} />
+            <Route path="/tasks" element={<Layout><TasksPage /></Layout>} />
+            <Route path="/team" element={<Layout><TeamPage /></Layout>} />
+            <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
+            <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+            <Route path="/files" element={<Layout><Files /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
+            
             {/* Legal pages */}
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/security" element={<Security />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
-
-            <Route path="/dashboard" element={<Layout><Index /></Layout>} />
-            <Route path="/projects" element={<Layout><ProjectsPageSimple /></Layout>} />
-            <Route path="/project/:id" element={<Layout><ProjectDetailsPage /></Layout>} />
-            <Route path="/tasks" element={<Layout><TasksPageNew /></Layout>} />
-            <Route path="/team" element={<Layout><TeamPage /></Layout>} />
-            <Route path="/calendar" element={<Layout><Calendar /></Layout>} />
-            <Route path="/calendar-test" element={<Layout><CalendarTest /></Layout>} />
-            <Route path="/calendar-simple" element={<Layout><CalendarSimplified /></Layout>} />
-            <Route path="/files" element={<Layout><Files /></Layout>} />
-            <Route path="/settings" element={<Layout><Settings /></Layout>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

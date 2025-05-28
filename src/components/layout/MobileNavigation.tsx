@@ -1,5 +1,5 @@
 
-import { Calendar, FolderKanban, Home, Menu, Settings, X, CheckSquare, Users } from "lucide-react";
+import { Calendar, FolderKanban, Home, Menu, Settings, X, CheckSquare, Users, BarChart2, File } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "react-router-dom";
@@ -58,6 +58,18 @@ export function MobileNavigation() {
               icon={<Calendar className="w-5 h-5" />}
               href="/calendar"
               label="Calendar"
+              onClick={() => setOpen(false)}
+            />
+            <MobileNavItem
+              icon={<BarChart2 className="w-5 h-5" />}
+              href="/analytics"
+              label="Analytics"
+              onClick={() => setOpen(false)}
+            />
+            <MobileNavItem
+              icon={<File className="w-5 h-5" />}
+              href="/files"
+              label="Files"
               onClick={() => setOpen(false)}
             />
             <MobileNavItem
