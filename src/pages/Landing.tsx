@@ -892,54 +892,48 @@ export default function Landing() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <PricingCard
                 title="Free"
-                price="$0"
-                description="Perfect for individuals and small projects"
+                price="$0/month"
+                description="Perfect for individuals and small teams"
                 features={[
-                  "Up to 5 Projects",
-                  "Basic Task Management",
-                  "Collaborative Workspace"
+                  "1 Project",
+                  "3 Team Members",
+                  "100MB File Storage",
+                  "Basic Calendar Access",
+                  "Community Support"
                 ]}
-                unavailable={[
-                  "Advanced Analytics",
-                  "Priority Support",
-                  "Unlimited Projects"
-                ]}
+                unavailable={[]}
                 ctaText="Sign Up Free"
                 popular={false}
               />
               <PricingCard
                 title="Basic"
-                price="$9.99/mo"
-                description="Great for growing creative teams"
+                price="$9/month"
+                description="Great for growing teams"
                 features={[
-                  "Up to 20 Projects",
-                  "Advanced Task Management",
-                  "Team Collaboration",
-                  "Basic Analytics",
-                  "Client Portal"
+                  "5 Projects",
+                  "10 Team Members",
+                  "2GB File Storage",
+                  "Event Notifications",
+                  "Email Support"
                 ]}
-                unavailable={[
-                  "Enterprise Features",
-                  "Priority Support"
-                ]}
+                unavailable={[]}
                 ctaText="Go Basic"
                 popular={true}
               />
               <PricingCard
                 title="Premium"
-                price="$24.99/mo"
-                description="For professional agencies and studios"
+                price="$29/month"
+                description="For professional teams"
                 features={[
                   "Unlimited Projects",
-                  "Advanced Analytics",
+                  "Unlimited Team Members",
+                  "100GB File Storage",
+                  "Priority Calendar Features",
                   "Priority Support",
-                  "Custom Integrations",
-                  "Advanced Team Management",
-                  "Resource Allocation",
-                  "White-labeling"
+                  "Custom Branding"
                 ]}
                 unavailable={[]}
                 ctaText="Go Premium"
