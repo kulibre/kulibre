@@ -9,20 +9,37 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Clear any existing hash from the URL
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+
+      // Get the current domain and construct the redirect URL
+      const redirectUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:5173/auth/callback'
+        : 'https://kulibre.com/auth/callback';
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: false // Ensure browser handles the redirect
         }
       });
 
       if (error) throw error;
+
+      // If we get here without a redirect, something went wrong
+      if (!data.url) {
+        throw new Error('No redirect URL received from Supabase');
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+      console.error('Login error:', error);
+      toast.error(error.message || 'Failed to initialize login');
     }
   };
 
