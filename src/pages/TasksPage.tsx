@@ -149,7 +149,7 @@ export default function TasksPage() {
     description: "",
     project_id: "none",
     status: "todo",
-    priority: "medium",
+    priority: "medium" as "low" | "medium" | "high",
     assigned_users: [] as User[],
     due_date: null as Date | null
   });
@@ -336,14 +336,8 @@ export default function TasksPage() {
   const addTaskMutation = useMutation({
     mutationFn: async (task: typeof newTask) => {
       try {
-        console.log("Starting task creation with:", task);
-
-        // Map assigned_users to user IDs
-        const assignedUserIds = Array.isArray(task.assigned_users)
-          ? task.assigned_users.map(u => typeof u === 'string' ? u : u.id)
-          : [];
-
-        console.log("Team members to assign:", assignedUserIds);
+        // Map assigned_users to user IDs for database insertion
+        const assignedUserIds = task.assigned_users.map(user => user.id);
 
         // First, insert the task
         const { data: newTaskData, error: taskError } = await supabase
@@ -358,11 +352,8 @@ export default function TasksPage() {
           .single();
 
         if (taskError || !newTaskData) {
-          console.error("Error inserting task:", taskError);
           throw taskError || new Error("Failed to create task");
         }
-
-        console.log("Task created successfully:", newTaskData);
 
         // If we have assigned users, create user_task entries
         if (assignedUserIds.length > 0) {
@@ -383,7 +374,6 @@ export default function TasksPage() {
 
         return newTaskData;
       } catch (error) {
-        console.error("Unexpected error in task creation:", error);
         throw error;
       }
     },
@@ -395,13 +385,6 @@ export default function TasksPage() {
       });
       setIsAddTaskOpen(false);
       resetNewTaskForm();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error adding task",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   });
 
@@ -409,45 +392,30 @@ export default function TasksPage() {
   const updateTaskMutation = useMutation({
     mutationFn: async (task: Task) => {
       try {
-        console.log("Update task mutation called with task:", task);
-        console.log("Assigned users in update mutation:", task.assigned_users);
-        
-        // Map assigned_users to user IDs
-        const assignedUserIds = Array.isArray(task.assigned_users)
-          ? task.assigned_users.map(u => u.id)
-          : [];
-        
-        console.log("Mapped assigned user IDs:", assignedUserIds);
-
-        // First, update the task
-        const { data: updatedTask, error: taskError } = await supabase
+        // Update task
+        const { data, error } = await supabase
           .from('tasks')
           .update({
             title: task.title,
-            project_id: task.project_id && task.project_id !== "none" ? task.project_id : null,
+            project_id: task.project_id !== "none" ? task.project_id : null,
             due_date: task.due_date,
-            completed_at: task.status === 'completed' ? new Date().toISOString() : null
+            completed_at: task.completed_at
           })
           .eq('id', task.id)
-          .select()
-          .single();
+          .select();
 
-        if (taskError || !updatedTask) {
-          console.error("Error updating task:", taskError);
-          throw taskError || new Error("Failed to update task");
-        }
+        if (error) throw error;
 
-        // Delete existing assignments
-        const { error: deleteError } = await supabase
+        // Handle user assignments
+        const assignedUserIds = task.assigned_users.map(user => user.id);
+
+        // First delete existing assignments
+        await supabase
           .from('user_tasks')
           .delete()
           .eq('task_id', task.id);
 
-        if (deleteError) {
-          console.error("Error deleting existing assignments:", deleteError);
-        }
-
-        // Add new assignments if there are any
+        // Then add new assignments
         if (assignedUserIds.length > 0) {
           const userTaskEntries = assignedUserIds.map(userId => ({
             task_id: task.id,
@@ -459,13 +427,13 @@ export default function TasksPage() {
             .insert(userTaskEntries);
 
           if (assignmentError) {
-            console.error("Error updating task assignments:", assignmentError);
+            console.error("Error updating user assignments:", assignmentError);
+            // Continue even if user assignments fail
           }
         }
 
-        return updatedTask;
+        return data;
       } catch (error) {
-        console.error("Unexpected error in task update:", error);
         throw error;
       }
     },
@@ -481,7 +449,7 @@ export default function TasksPage() {
     onError: (error: any) => {
       toast({
         title: "Error updating task",
-        description: error.message,
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
     }
@@ -591,23 +559,8 @@ export default function TasksPage() {
     }
 
     try {
-      console.log("Opening edit dialog for task:", task);
-      console.log("Assigned users:", task.assigned_users);
-
-      // Convert assigned_users to proper User objects if they're just IDs
-      let processedAssignedUsers: User[] = [];
-      
-      if (Array.isArray(task.assigned_users)) {
-        // If assigned_users contains string IDs, convert to User objects
-        if (task.assigned_users.length > 0 && typeof task.assigned_users[0] === 'string') {
-          processedAssignedUsers = users?.filter(user => 
-            task.assigned_users.includes(user.id)
-          ) || [];
-        } else {
-          // If already User objects, use them directly
-          processedAssignedUsers = [...task.assigned_users.map(user => ({...user}))];
-        }
-      }
+      // Ensure assigned_users is always an array of User objects
+      const processedAssignedUsers = task.assigned_users || [];
 
       // Make sure we have the assigned_users array and all required fields
       const taskToEdit: Task = {
@@ -616,9 +569,6 @@ export default function TasksPage() {
         status: (task.completed_at ? 'completed' : 'todo') as "todo" | "in_progress" | "completed",
         priority: (task.priority || 'medium') as "low" | "medium" | "high"
       };
-
-      console.log("Prepared task for editing:", taskToEdit);
-      console.log("Assigned users after preparation:", taskToEdit.assigned_users);
 
       setCurrentTask(taskToEdit);
       setIsEditTaskOpen(true);
@@ -823,46 +773,17 @@ export default function TasksPage() {
     // Use empty arrays as fallback
   }
 
+  // Update the task assignment section to use proper types
+  const handleTaskAssignment = (user: User, currentAssignedUsers: User[]) => {
+    const isSelected = currentAssignedUsers.some(u => u.id === user.id);
+    const updatedUsers = isSelected
+      ? currentAssignedUsers.filter(u => u.id !== user.id)
+      : [...currentAssignedUsers, user];
+    return updatedUsers;
+  };
+
   return (
     <div className="space-y-8">
-      {/* DEBUG OUTPUT - Only show in development mode */}
-      {process.env.NODE_ENV !== 'production' && (
-        <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-          <h3 style={{ fontWeight: 'bold', marginBottom: 8 }}>DEBUG INFO</h3>
-          <div style={{ marginBottom: 8 }}>
-            <strong>Users fetched:</strong>
-            <ul style={{ fontSize: 12 }}>
-              {(users || []).map(u => (
-                <li key={u.id}>{u.id} - {u.full_name}</li>
-              ))}
-            </ul>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <strong>Tasks assignments (from user_tasks):</strong>
-            <ul style={{ fontSize: 12 }}>
-              {(tasks || []).map(task => (
-                <li key={task.id}>
-                  Task {task.id}: assigned_users IDs: [
-                  {(task.assigned_users || []).map(u => u.id).join(', ') || 'None'}
-                  ]
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <strong>Tasks assignments (names):</strong>
-            <ul style={{ fontSize: 12 }}>
-              {(tasks || []).map(task => (
-                <li key={task.id}>
-                  Task {task.id}: assigned_users: [
-                  {(task.assigned_users || []).map(u => u.full_name).join(', ') || 'None'}
-                  ]
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
       <div>
         <h1 className="text-3xl font-bold">Tasks</h1>
         <p className="text-muted-foreground mt-1">Manage your tasks and track progress</p>
@@ -1023,99 +944,85 @@ export default function TasksPage() {
           console.log("Dialog open state changing to:", open);
           setIsAddTaskOpen(open);
         }}>
-          <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={newTask.title}
-                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                placeholder="Task title"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="description">Description (Display Only)</Label>
-              <Textarea
-                id="description"
-                value={newTask.description}
-                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                placeholder="Task description (not saved to database yet)"
-                rows={2}
-              />
-              <p className="text-xs text-muted-foreground">
-                Note: Description is for display purposes only and will not be saved to the database.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
+            <DialogHeader className="pb-2">
+              <DialogTitle>Add New Task</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
               <div className="space-y-1">
-                <Label htmlFor="project">Project</Label>
-                <Select
-                  value={newTask.project_id || "none"}
-                  onValueChange={(value) => setNewTask({ ...newTask, project_id: value === "none" ? "" : value })}
-                >
-                  <SelectTrigger id="project" className="h-8">
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No project</SelectItem>
-                    {projectsForTasks?.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="title" className="text-sm">Title</Label>
+                <Input
+                  id="title"
+                  value={newTask.title}
+                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  placeholder="Task title"
+                  className="h-8"
+                />
               </div>
-              <div className="space-y-1 col-span-2">
+              
+              <div className="space-y-1">
+                <Label htmlFor="description" className="text-sm">Description (Display Only)</Label>
+                <Textarea
+                  id="description"
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  placeholder="Task description (not saved to database yet)"
+                  className="h-16 min-h-[60px] resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Note: Description is for display purposes only and will not be saved to the database.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="project" className="text-sm">Project</Label>
+                  <Select
+                    value={newTask.project_id || "none"}
+                    onValueChange={(value) => setNewTask({ ...newTask, project_id: value === "none" ? "" : value })}
+                  >
+                    <SelectTrigger id="project" className="h-8">
+                      <SelectValue placeholder="Select project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No project</SelectItem>
+                      {projectsForTasks?.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="assigned-users">Team Members</Label>
+                  <Label htmlFor="assigned-users" className="text-sm">Team Members</Label>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={() => {
-                      // Open team page in a new tab
-                      window.open('/team', '_blank');
-                    }}
+                    className="h-6 px-2 text-xs"
+                    onClick={() => window.open('/team', '_blank')}
                   >
                     <UserPlus className="h-3 w-3 mr-1" />
                     Add Team Member
                   </Button>
                 </div>
                 <div className="border rounded-md p-1">
-                  <div className="text-xs text-red-500 p-2 bg-red-50 mb-2">
-                    <strong>DEBUG INFO:</strong><br />
-                    Users data available: {users ? 'Yes' : 'No'}<br />
-                    Number of users: {users?.length || 0}<br />
-                    User IDs: {users?.map(u => u.id).join(', ') || 'None'}<br />
-                    User Names: {users?.map(u => u.full_name).join(', ') || 'None'}
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 max-h-[100px] overflow-y-auto">
+                  <div className="max-h-[100px] overflow-y-auto">
                     {users && users.length > 0 ? (
-                      users.map((user) => {
-                        if (!user || !user.id) return null;
-                        const assignedUsers = Array.isArray(newTask.assigned_users) ? newTask.assigned_users : [];
-                        const isSelected = assignedUsers.some(u => u.id === user.id);
-                        return (
+                      <div className="space-y-1 p-1">
+                        {users.map((user) => (
                           <div
                             key={user.id}
                             className={`px-2 py-0.5 rounded-full text-xs cursor-pointer ${
-                              isSelected
+                              newTask.assigned_users.some(u => u.id === user.id)
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-secondary text-secondary-foreground'
                             }`}
                             onClick={() => {
-                              let updatedUsers: User[];
-                              if (isSelected) {
-                                updatedUsers = assignedUsers.filter(u => u.id !== user.id);
-                              } else {
-                                updatedUsers = [...assignedUsers, user];
-                              }
+                              const updatedUsers = handleTaskAssignment(user, newTask.assigned_users);
                               setNewTask({
                                 ...newTask,
                                 assigned_users: updatedUsers
@@ -1124,8 +1031,8 @@ export default function TasksPage() {
                           >
                             {user.full_name || 'Unnamed User'}
                           </div>
-                        );
-                      })
+                        ))}
+                      </div>
                     ) : (
                       <div className="text-xs text-muted-foreground p-2">
                         No team members available. Please add team members first.
@@ -1133,234 +1040,199 @@ export default function TasksPage() {
                     )}
                   </div>
                 </div>
-
-                <div className="flex justify-between mt-1">
-                  {users && users.length > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      Available: {users.length} team member(s)
-                    </div>
-                  )}
-                  {Array.isArray(newTask.assigned_users) && newTask.assigned_users.length > 0 && (
-                    <div className="text-xs text-muted-foreground">
-                      Selected: {newTask.assigned_users.length} team member(s)
-                    </div>
-                  )}
-                </div>
-
-                {users && users.length === 0 && (
-                  <div className="text-xs text-red-500 mt-1">
-                    No team members found. Please add team members on the Team page first.
-                  </div>
-                )}
-
-                <div className="mt-2 border rounded-md p-2 bg-gray-50">
-                  <h4 className="text-xs font-medium mb-2">Quick Add Team Member</h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="Full Name"
-                      className="h-7 text-xs"
-                      id="quick-add-name"
-                    />
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-7"
-                      onClick={async () => {
-                        const nameInput = document.getElementById('quick-add-name') as HTMLInputElement;
-                        if (!nameInput || !nameInput.value.trim()) {
-                          toast({
-                            title: "Error",
-                            description: "Please enter a name for the team member",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-
-                        const fullName = nameInput.value.trim();
-
-                        try {
-                          // Generate a UUID for the new team member
-                          const id = crypto.randomUUID();
-
-                          // Add the team member to the database
-                          const { data, error } = await supabase
-                            .from('team_members')
-                            .insert({
-                              id,
-                              full_name: fullName,
-                              active: true,
-                              role: 'member',
-                              email: `${fullName.toLowerCase().replace(/\s+/g, '.')}@example.com` // Add a placeholder email
-                            })
-                            .select();
-
-                          if (error) {
-                            console.error("Error adding team member:", error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to add team member: " + error.message,
-                              variant: "destructive"
-                            });
-                          } else {
-                            console.log("Team member added:", data);
-                            toast({
-                              title: "Success",
-                              description: `Team member "${fullName}" added successfully`
-                            });
-
-                            // Clear the input
-                            nameInput.value = "";
-
-                            // Refresh the users list
-                            queryClient.invalidateQueries({ queryKey: ['users-for-tasks'] });
-                          }
-                        } catch (error) {
-                          console.error("Error in quick add team member:", error);
-                          toast({
-                            title: "Error",
-                            description: "An unexpected error occurred",
-                            variant: "destructive"
-                          });
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </div>
-                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={newTask.status}
-                  onValueChange={(value) => setNewTask({ ...newTask, status: value as any })}
-                >
-                  <SelectTrigger id="status" className="h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todo">To Do</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={newTask.priority}
-                  onValueChange={(value) => setNewTask({ ...newTask, priority: value as any })}
-                >
-                  <SelectTrigger id="priority" className="h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="due-date">Due Date</Label>
-              <Input
-                id="due-date"
-                type="date"
-                value={newTask.due_date ? format(newTask.due_date, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  console.log("Date input changed:", e.target.value);
-                  try {
-                    if (e.target.value) {
-                      const selectedDate = new Date(e.target.value);
-                      console.log("Parsed date:", selectedDate);
-                      if (!isNaN(selectedDate.getTime())) {
-                        setNewTask({ ...newTask, due_date: selectedDate });
-                      }
-                    } else {
-                      setNewTask({ ...newTask, due_date: null });
-                    }
-                  } catch (error) {
-                    console.error("Error parsing date:", error);
-                  }
-                }}
-                className="h-8"
-              />
-              {newTask.due_date && (
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>Selected: {format(newTask.due_date, 'MMMM d, yyyy')}</span>
+              
+              <div className="mt-1 border rounded-md p-2 bg-gray-50">
+                <h4 className="text-xs font-medium mb-1">Quick Add Team Member</h4>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Full Name"
+                    className="h-7 text-xs flex-1"
+                    id="quick-add-name"
+                  />
                   <Button
-                    variant="ghost"
+                    variant="default"
                     size="sm"
-                    className="h-6 px-2"
-                    onClick={() => setNewTask({ ...newTask, due_date: null })}
+                    className="h-7 px-3"
+                    onClick={async () => {
+                      const nameInput = document.getElementById('quick-add-name') as HTMLInputElement;
+                      const name = nameInput.value.trim();
+                      
+                      if (!name) {
+                        toast({
+                          title: "Error",
+                          description: "Please enter a name",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      
+                      try {
+                        const { data: newUser, error } = await supabase
+                          .from('team_members')
+                          .insert([{ 
+                            id: crypto.randomUUID(),
+                            full_name: name,
+                            active: true,
+                            role: 'member',
+                            email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`
+                          }])
+                          .select()
+                          .single();
+                        
+                        if (error) throw error;
+                        
+                        toast({
+                          title: "Success",
+                          description: "Team member added successfully"
+                        });
+                        nameInput.value = '';
+                        await queryClient.invalidateQueries({ queryKey: ['users-for-tasks'] });
+                      } catch (error) {
+                        console.error('Error adding team member:', error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to add team member",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
                   >
-                    Clear
+                    Add
                   </Button>
                 </div>
-              )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="status" className="text-sm">Status</Label>
+                  <Select
+                    value={newTask.status}
+                    onValueChange={(value) => setNewTask({ ...newTask, status: value as any })}
+                  >
+                    <SelectTrigger id="status" className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todo">To Do</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="priority" className="text-sm">Priority</Label>
+                  <Select
+                    value={newTask.priority}
+                    onValueChange={(value) => setNewTask({ ...newTask, priority: value as any })}
+                  >
+                    <SelectTrigger id="priority" className="h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="due-date" className="text-sm">Due Date</Label>
+                <Input
+                  id="due-date"
+                  type="date"
+                  value={newTask.due_date ? format(newTask.due_date, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    try {
+                      if (e.target.value) {
+                        const selectedDate = new Date(e.target.value);
+                        if (!isNaN(selectedDate.getTime())) {
+                          setNewTask({ ...newTask, due_date: selectedDate });
+                        }
+                      } else {
+                        setNewTask({ ...newTask, due_date: null });
+                      }
+                    } catch (error) {
+                      console.error("Error parsing date:", error);
+                    }
+                  }}
+                  className="h-8"
+                />
+                {newTask.due_date && (
+                  <div className="flex justify-between items-center text-xs text-muted-foreground">
+                    <span>Selected: {format(newTask.due_date, 'MMMM d, yyyy')}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2"
+                      onClick={() => setNewTask({ ...newTask, due_date: null })}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button
-              onClick={() => {
-                try {
-                  // Ensure assigned_users is an array
-                  const assignedUsers = Array.isArray(newTask.assigned_users) ? newTask.assigned_users : [];
+            <DialogFooter className="mt-4">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button
+                onClick={() => {
+                  try {
+                    // Ensure assigned_users is an array
+                    const assignedUsers = Array.isArray(newTask.assigned_users) ? newTask.assigned_users : [];
 
-                  // Log detailed information about the task being added
-                  console.log("Adding task with details:", {
-                    title: newTask.title,
-                    description: newTask.description,
-                    project_id: newTask.project_id,
-                    status: newTask.status,
-                    priority: newTask.priority,
-                    assigned_users: assignedUsers,
-                    due_date: newTask.due_date
-                  });
+                    // Log detailed information about the task being added
+                    console.log("Adding task with details:", {
+                      title: newTask.title,
+                      description: newTask.description,
+                      project_id: newTask.project_id,
+                      status: newTask.status,
+                      priority: newTask.priority,
+                      assigned_users: assignedUsers,
+                      due_date: newTask.due_date
+                    });
 
-                  // Log specific information about team members
-                  console.log("Team members being assigned:", assignedUsers);
-                  console.log("Number of team members:", assignedUsers.length);
+                    // Log specific information about team members
+                    console.log("Team members being assigned:", assignedUsers);
+                    console.log("Number of team members:", assignedUsers.length);
 
-                  // Log each team member ID for debugging
-                  if (assignedUsers.length > 0) {
-                    console.log("Team member IDs:");
-                    assignedUsers.forEach((userId, index) => {
-                      console.log(`[${index}] ${userId}`);
+                    // Log each team member ID for debugging
+                    if (assignedUsers.length > 0) {
+                      console.log("Team member IDs:");
+                      assignedUsers.forEach((userId, index) => {
+                        console.log(`[${index}] ${userId}`);
+                      });
+                    }
+
+                    // Create a deep copy of the task to ensure we're not modifying the original
+                    const taskToAdd = {
+                      ...newTask,
+                      assigned_users: [...assignedUsers]
+                    };
+
+                    console.log("Final task object being submitted:", taskToAdd);
+
+                    // Submit the task
+                    addTaskMutation.mutate(taskToAdd);
+                  } catch (error) {
+                    console.error("Error in Add Task button click:", error);
+                    toast({
+                      title: "Error",
+                      description: "There was a problem adding the task. Please try again.",
+                      variant: "destructive",
                     });
                   }
-
-                  // Create a deep copy of the task to ensure we're not modifying the original
-                  const taskToAdd = {
-                    ...newTask,
-                    assigned_users: [...assignedUsers]
-                  };
-
-                  console.log("Final task object being submitted:", taskToAdd);
-
-                  // Submit the task
-                  addTaskMutation.mutate(taskToAdd);
-                } catch (error) {
-                  console.error("Error in Add Task button click:", error);
-                  toast({
-                    title: "Error",
-                    description: "There was a problem adding the task. Please try again.",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              disabled={!newTask.title.trim() || addTaskMutation.isPending}
-            >
-              {addTaskMutation.isPending ? "Adding..." : "Add Task"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                }}
+                disabled={!newTask.title.trim() || addTaskMutation.isPending}
+              >
+                {addTaskMutation.isPending ? "Adding..." : "Add Task"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Edit Task Dialog */}
@@ -1369,11 +1241,11 @@ export default function TasksPage() {
           console.log("Edit Dialog open state changing to:", open);
           setIsEditTaskOpen(open);
         }}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="pb-2">
               <DialogTitle>Edit Task</DialogTitle>
             </DialogHeader>
-            <div className="space-y-3 py-2">
+            <div className="space-y-2 py-1">
               <div className="space-y-1">
                 <Label htmlFor="edit-title">Title</Label>
                 <Input
@@ -1432,69 +1304,38 @@ export default function TasksPage() {
                     Add Team Member
                   </Button>
                 </div>
-                <div className="border rounded-md p-1">
-                  <div className="text-xs text-red-500 p-2 bg-red-50 mb-2">
-                    <strong>DEBUG INFO (Edit Mode):</strong><br />
-                    Users data available: {users ? 'Yes' : 'No'}<br />
-                    Number of users: {users?.length || 0}<br />
-                    User IDs: {users?.map(u => u.id).join(', ') || 'None'}<br />
-                    User Names: {users?.map(u => u.full_name).join(', ') || 'None'}
-                  </div>
-
-                  <div className="flex flex-wrap gap-1 max-h-[100px] overflow-y-auto">
-                    {users && users.length > 0 ? (
-                      users.map((user) => {
-                        if (!user || !user.id) return null;
-                        // Check if the user is in the assigned_users array by comparing IDs
-                        const isSelected = currentTask?.assigned_users?.some(assignedUser => 
-                          assignedUser && assignedUser.id === user.id
-                        ) || false;
-
-                        console.log(`Checking user ${user.full_name} (${user.id}):`, {
-                          isSelected,
-                          currentTaskUsers: currentTask?.assigned_users?.map(u => `${u.full_name} (${u.id})`)
-                        });
-
-                        return (
-                          <div
-                            key={user.id}
-                            className={`px-2 py-0.5 rounded-full text-xs cursor-pointer ${
-                              isSelected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-secondary text-secondary-foreground'
-                            }`}
-                            onClick={() => {
-                              if (!currentTask) return;
-                              
-                              console.log('Current assigned users before update:', currentTask.assigned_users);
-                              
-                              let updatedUsers: User[];
-                              if (isSelected) {
-                                // Remove user if already selected
-                                updatedUsers = (currentTask.assigned_users || []).filter(u => u.id !== user.id);
-                              } else {
-                                // Add user if not selected
-                                updatedUsers = [...(currentTask.assigned_users || []), user];
-                              }
-                              
-                              console.log('Updated assigned users:', updatedUsers);
-                              
-                              setCurrentTask({
-                                ...currentTask,
-                                assigned_users: updatedUsers
-                              });
-                            }}
-                          >
-                            {user.full_name || 'Unnamed User'}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="text-xs text-muted-foreground p-2">
-                        No team members available. Please add team members first.
-                      </div>
-                    )}
-                  </div>
+                <div className="border rounded-md p-1 max-h-[120px] overflow-y-auto">
+                  {users && users.length > 0 ? (
+                    users.map((user) => {
+                      if (!user || !user.id) return null;
+                      const currentAssignedUsers = currentTask?.assigned_users || [];
+                      const isAssigned = currentAssignedUsers.some(u => u.id === user.id);
+                      return (
+                        <div
+                          key={user.id}
+                          className={`px-2 py-0.5 rounded-full text-xs cursor-pointer ${
+                            isAssigned
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-secondary text-secondary-foreground'
+                          }`}
+                          onClick={() => {
+                            if (!currentTask) return;
+                            const updatedUsers = handleTaskAssignment(user, currentAssignedUsers);
+                            setCurrentTask({
+                              ...currentTask,
+                              assigned_users: updatedUsers
+                            });
+                          }}
+                        >
+                          {user.full_name || 'Unnamed User'}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-xs text-muted-foreground p-2">
+                      No team members available. Please add team members first.
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-between mt-1">
@@ -1517,8 +1358,8 @@ export default function TasksPage() {
                 )}
 
                 <div className="mt-2 border rounded-md p-2 bg-gray-50">
-                  <h4 className="text-xs font-medium mb-2">Quick Add Team Member</h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <h4 className="text-xs font-medium mb-1">Quick Add Team Member</h4>
+                  <div className="grid grid-cols-2 gap-2 mb-2">
                     <Input
                       placeholder="Full Name"
                       className="h-7 text-xs"
@@ -1542,10 +1383,7 @@ export default function TasksPage() {
                         const fullName = nameInput.value.trim();
 
                         try {
-                          // Generate a UUID for the new team member
                           const id = crypto.randomUUID();
-
-                          // Add the team member to the database
                           const { data, error } = await supabase
                             .from('team_members')
                             .insert({
@@ -1553,32 +1391,25 @@ export default function TasksPage() {
                               full_name: fullName,
                               active: true,
                               role: 'member',
-                              email: `${fullName.toLowerCase().replace(/\s+/g, '.')}@example.com` // Add a placeholder email
+                              email: `${fullName.toLowerCase().replace(/\s+/g, '.')}@example.com`
                             })
                             .select();
 
                           if (error) {
-                            console.error("Error adding team member:", error);
                             toast({
                               title: "Error",
                               description: "Failed to add team member: " + error.message,
                               variant: "destructive"
                             });
                           } else {
-                            console.log("Team member added:", data);
                             toast({
                               title: "Success",
                               description: `Team member "${fullName}" added successfully`
                             });
-
-                            // Clear the input
                             nameInput.value = "";
-
-                            // Refresh the users list
                             queryClient.invalidateQueries({ queryKey: ['users-for-tasks'] });
                           }
                         } catch (error) {
-                          console.error("Error in quick add team member:", error);
                           toast({
                             title: "Error",
                             description: "An unexpected error occurred",
