@@ -23,31 +23,39 @@ export function TeamWorkloadChart({ data }: TeamWorkloadChartProps) {
   }));
 
   return (
-    <div className="h-[400px] w-full">
+    <div className="h-[300px] w-full p-4">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={processedData}
           margin={{
-            top: 20,
+            top: 10,
             right: 30,
-            left: 20,
+            left: 0,
             bottom: 20,
           }}
-          barSize={30}
-          barGap={8}
+          barSize={20}
+          barGap={4}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            vertical={false} 
+            stroke="#f3f4f6" 
+            strokeWidth={1}
+          />
           <XAxis
             dataKey="name"
             scale="point"
-            padding={{ left: 20, right: 20 }}
+            padding={{ left: 40, right: 40 }}
             tick={{ fontSize: 12, fill: "#6b7280" }}
             tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 12)}...` : value}
             stroke="#e5e7eb"
+            axisLine={{ stroke: '#e5e7eb', strokeWidth: 1 }}
           />
           <YAxis
             tick={{ fontSize: 12, fill: "#6b7280" }}
             stroke="#e5e7eb"
+            axisLine={{ stroke: '#e5e7eb', strokeWidth: 1 }}
+            tickLine={false}
           />
           <Tooltip
             formatter={(value, name) => {
@@ -60,25 +68,28 @@ export function TeamWorkloadChart({ data }: TeamWorkloadChartProps) {
               border: "1px solid #e5e7eb",
               borderRadius: "6px",
               padding: "8px 12px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
             }}
-            cursor={{ fill: "rgba(0, 0, 0, 0.04)" }}
+            cursor={{ fill: "rgba(0, 0, 0, 0.02)" }}
           />
           <Legend
             wrapperStyle={{
-              paddingTop: "12px",
+              paddingTop: "8px",
             }}
+            iconType="circle"
+            iconSize={8}
           />
           <Bar
             dataKey="tasks"
-            fill="#9b87f5"
-            radius={[6, 6, 0, 0]}
+            fill="#8b5cf6"
+            radius={[4, 4, 0, 0]}
             name="Total Tasks"
             stackId="a"
           />
           <Bar
             dataKey="completed"
-            fill="#4ade80"
-            radius={[6, 6, 0, 0]}
+            fill="#10b981"
+            radius={[4, 4, 0, 0]}
             name="Completed"
             stackId="b"
           />
