@@ -1,4 +1,3 @@
-
 import { Bell, Search, Settings, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -16,11 +15,11 @@ import {
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [userInitials, setUserInitials] = useState("JS");
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Fetch user profile when component mounts
     const fetchUserProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -32,6 +31,12 @@ export function Header() {
           .eq('id', user.id)
           .single();
 
+        // Check for Google avatar in user metadata
+        const googleAvatar = user.user_metadata?.avatar_url;
+        if (googleAvatar) {
+          setUserAvatar(googleAvatar);
+        }
+
         if (profile && profile.full_name) {
           // Generate initials from full name
           const names = profile.full_name.split(' ');
@@ -41,9 +46,29 @@ export function Header() {
 
           setUserInitials(initials.toUpperCase());
         } else {
-          // Use email as fallback
-          const email = user.email || '';
-          setUserInitials(email.substring(0, 2).toUpperCase());
+          // Use Google display name if available
+          const googleName = user.user_metadata?.full_name;
+          if (googleName) {
+            const names = googleName.split(' ');
+            const initials = names.length > 1
+              ? `${names[0][0]}${names[names.length - 1][0]}`
+              : names[0].substring(0, 2);
+            setUserInitials(initials.toUpperCase());
+
+            // Create profile if it doesn't exist
+            await supabase
+              .from('profiles')
+              .upsert({
+                id: user.id,
+                full_name: googleName,
+                avatar_url: googleAvatar,
+                email: user.email
+              });
+          } else {
+            // Fallback to email
+            const email = user.email || '';
+            setUserInitials(email.substring(0, 2).toUpperCase());
+          }
         }
       }
     };
@@ -51,68 +76,69 @@ export function Header() {
     fetchUserProfile();
   }, []);
 
-
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/login');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <header className="border-b py-3 px-6 flex items-center justify-between bg-white">
-      <div className="flex items-center gap-3 md:w-1/3">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-9 pr-4 py-2 w-full rounded-md border border-input bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 flex items-center space-x-2">
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <div className="bg-kulibre-purple rounded-lg w-8 h-8 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">K</span>
+            </div>
+            <span className="font-semibold">kulibre</span>
+          </Link>
         </div>
-      </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <Bell className="h-5 w-5 text-muted-foreground hover:text-foreground cursor-pointer" />
-          <span className="absolute -top-1 -right-1 bg-kulibre-purple text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-            3
-          </span>
+        <div className="flex flex-1 items-center justify-between space-x-2">
+          <nav className="flex items-center space-x-6">
+            {/* Add navigation items here if needed */}
+          </nav>
+
+          <div className="flex items-center space-x-4">
+            <Bell className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-foreground" />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                {userAvatar ? (
+                  <img 
+                    src={userAvatar} 
+                    alt="User avatar" 
+                    className="h-8 w-8 rounded-full"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-kulibre-purple text-white flex items-center justify-center text-sm font-medium">
+                    {userInitials}
+                  </div>
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="h-9 w-9 rounded-full bg-kulibre-purple flex items-center justify-center text-white font-medium outline-none">
-              {userInitials}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/settings" className="cursor-pointer flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings" className="cursor-pointer flex items-center">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={async () => {
-                await supabase.auth.signOut();
-                toast({
-                  title: "Signed out",
-                  description: "You have been signed out successfully.",
-                });
-                navigate("/login");
-              }}
-              className="cursor-pointer flex items-center text-red-500"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   );

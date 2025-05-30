@@ -29,6 +29,7 @@ import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
+import AuthCallback from "./pages/AuthCallback";
 
 // Import resource pages
 import Documentation from "./pages/Documentation";
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/select-plan" element={<SelectPlan />} />
             <Route path="/about" element={<About />} />
             <Route path="/careers" element={<Careers />} />

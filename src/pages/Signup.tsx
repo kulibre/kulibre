@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,10 @@ export default function Signup() {
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/login');
+  }, [navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
