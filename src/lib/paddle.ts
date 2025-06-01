@@ -1,4 +1,5 @@
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
+import { supabase } from '@/integrations/supabase/client';
 
 let paddleInstance: Paddle | undefined;
 
@@ -48,6 +49,10 @@ export async function openCheckout(priceId: string) {
     const paddle = await initPaddle();
     if (!paddle) throw new Error('Paddle not initialized');
 
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
     // Check if third-party cookies are enabled
     try {
       const testCookie = 'paddlejs_cookies_check=1';
@@ -68,7 +73,8 @@ export async function openCheckout(priceId: string) {
     console.log('Attempting to open checkout with config:', {
       priceId,
       hasCheckout: !!paddle.Checkout,
-      hasOpen: !!paddle.Checkout?.open
+      hasOpen: !!paddle.Checkout?.open,
+      customerEmail: user.email
     });
 
     await paddle.Checkout.open({
@@ -81,6 +87,9 @@ export async function openCheckout(priceId: string) {
         theme: 'light',
         locale: 'en',
         successUrl: window.location.origin + '/dashboard?checkout=success'
+      },
+      customer: {
+        email: user.email
       }
     });
   } catch (error: any) {
