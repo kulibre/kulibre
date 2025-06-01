@@ -30,14 +30,37 @@ export async function openCheckout(priceId: string) {
     const paddle = await initPaddle();
     if (!paddle) throw new Error('Paddle not initialized');
 
+    // Check if third-party cookies are enabled
+    try {
+      const testCookie = 'paddlejs_cookies_check=1';
+      document.cookie = testCookie;
+      const cookiesEnabled = document.cookie.indexOf(testCookie) !== -1;
+      if (!cookiesEnabled) {
+        throw new Error('Third-party cookies are required for checkout');
+      }
+    } catch (cookieError) {
+      throw new Error('Please enable third-party cookies to proceed with checkout');
+    }
+
     await paddle.Checkout.open({
       items: [{
         priceId,
         quantity: 1
-      }]
+      }],
+      settings: {
+        displayMode: 'overlay', // This ensures better compatibility
+        theme: 'light',
+        locale: 'en',
+        successUrl: window.location.origin + '/dashboard?checkout=success',
+        closeOnSuccess: true,
+      }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Paddle checkout error:', error);
+    if (error.message.includes('cookies')) {
+      // Show a more user-friendly error for cookie issues
+      throw new Error('Please enable third-party cookies in your browser settings to complete the checkout process. This is required for secure payment processing.');
+    }
     throw error;
   }
 }

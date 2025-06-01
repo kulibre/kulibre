@@ -82,12 +82,24 @@ export function SubscriptionPlans() {
       setIsLoading(true);
       console.log('Opening checkout for plan:', plan.id); // Debug log
       await openCheckout(plan.id);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating checkout:', error);
       toast({
-        title: "Error",
-        description: "Failed to start checkout process",
-        variant: "destructive"
+        title: "Checkout Error",
+        description: error.message.includes('cookies')
+          ? "Please enable third-party cookies in your browser to complete the checkout. This is required for secure payment processing."
+          : "Failed to start checkout process. Please try again or contact support if the issue persists.",
+        variant: "destructive",
+        action: error.message.includes('cookies') ? (
+          <a
+            href="https://support.google.com/chrome/answer/95647"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-white hover:text-gray-200"
+          >
+            How to enable cookies
+          </a>
+        ) : undefined
       });
     } finally {
       setIsLoading(false);
