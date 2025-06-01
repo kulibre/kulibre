@@ -351,9 +351,9 @@ export default function Index() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
           title="Active Tasks"
-          value={isLoadingActiveTasks ? "..." : activeTasks?.toString() || "0"}
+          value={isLoadingActiveTasks ? "Loading..." : activeTasks?.toString() || "0"}
           icon={<FolderKanban className="h-5 w-5" />}
-          description="In progress"
+          description="Tasks in progress"
           trend="up"
           trendValue={`${isLoadingActiveTasks ? "Loading..." : "Updated just now"}`}
         />
@@ -368,9 +368,9 @@ export default function Index() {
         />
         <StatCard
           title="Completed Tasks"
-          value={isLoadingCompletedTasks ? "..." : completedTasksCount?.toString() || "0"}
+          value={isLoadingCompletedTasks ? "Loading..." : completedTasksCount?.toString() || "0"}
           icon={<CheckSquare className="h-5 w-5" />}
-          description="This week"
+          description="In the last 7 days"
           trend="up"
           trendValue="Completed tasks"
           bgColor="bg-kulibre-green/50"

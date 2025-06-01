@@ -7,15 +7,23 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   base: "/",
   server: {
-    host: "::",
-    port: 8080
+    host: "localhost",
+    port: 8081,
+    strictPort: true,
+    hmr: {
+      overlay: true
+    }
   },
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    sourcemap: true
   },
   plugins: [
-    react(),
+    react({
+      devTarget: 'es2020',
+      plugins: []
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -24,4 +32,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom']
+  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 }));

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { openCheckout } from '@/lib/paddle';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -52,7 +53,31 @@ export default function AuthCallback() {
           await new Promise(resolve => setTimeout(resolve, 500));
 
           toast.success('Successfully signed in!');
-          navigate('/dashboard', { replace: true });
+
+          // Check if there was a selected plan before login
+          const selectedPlan = sessionStorage.getItem('selectedPlan');
+          const returnTo = sessionStorage.getItem('returnTo');
+          
+          // Clear stored data
+          sessionStorage.removeItem('selectedPlan');
+          sessionStorage.removeItem('returnTo');
+
+          if (selectedPlan) {
+            // Navigate back to the original location or select-plan page
+            const redirectTo = returnTo || '/select-plan';
+            navigate(redirectTo, { replace: true });
+            
+            // Then try to open the checkout
+            try {
+              await openCheckout(selectedPlan);
+            } catch (error) {
+              console.error('Error opening checkout:', error);
+              toast.error('Failed to open checkout. Please try selecting your plan again.');
+            }
+          } else {
+            // No selected plan, go to dashboard
+            navigate('/dashboard', { replace: true });
+          }
         } else {
           // No session found
           setError('No session found. Please try signing in again.');
