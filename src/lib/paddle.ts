@@ -20,15 +20,17 @@ export async function initPaddle() {
       throw new Error('Paddle client token is missing. Please add VITE_PADDLE_CLIENT_TOKEN to your .env file');
     }
 
+    // Initialize Paddle with MCP settings
     paddleInstance = await initializePaddle({
       environment,
       token,
       checkout: {
         settings: {
-          displayMode: 'overlay',
+          displayMode: 'inline',
           theme: 'light',
           locale: 'en',
-          frameTarget: 'body'
+          frameTarget: 'body',
+          allowLogout: false
         }
       }
     });
@@ -61,6 +63,16 @@ export async function openCheckout(priceId: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    // Get user's location for currency detection
+    try {
+      const response = await fetch('https://api.ipapi.com/api/check?access_key=YOUR_IPAPI_KEY');
+      const data = await response.json();
+      const userCurrency = data.currency || 'USD'; // Default to USD if detection fails
+      console.log('Detected user currency:', userCurrency);
+    } catch (error) {
+      console.warn('Failed to detect user currency:', error);
+    }
+
     // Check if third-party cookies are enabled
     try {
       const testCookie = 'paddlejs_cookies_check=1';
@@ -85,17 +97,19 @@ export async function openCheckout(priceId: string) {
       customerEmail: user.email
     });
 
+    // Open checkout with MCP configuration
     await paddle.Checkout.open({
       items: [{
         priceId,
         quantity: 1
       }],
       settings: {
-        displayMode: 'overlay',
+        displayMode: 'inline',
         theme: 'light',
         locale: 'en',
         successUrl: window.location.origin + '/dashboard?checkout=success',
-        frameTarget: 'body'
+        frameTarget: 'body',
+        allowLogout: false
       },
       customer: {
         email: user.email
