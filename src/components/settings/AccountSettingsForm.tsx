@@ -36,21 +36,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Password form schema with stronger validation
-const passwordFormSchema = z.object({
-  currentPassword: z.string().min(1, { message: "Current password is required" }),
-  newPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
-    .regex(/[0-9]/, { message: "Password must contain at least one number" }),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
 interface AccountSettingsFormProps {
   profile: any;
 }
@@ -58,7 +43,6 @@ interface AccountSettingsFormProps {
 export function AccountSettingsForm({ profile }: AccountSettingsFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [userEmail, setUserEmail] = useState("");
@@ -91,16 +75,6 @@ export function AccountSettingsForm({ profile }: AccountSettingsFormProps) {
     }
   }, [userEmail, emailForm]);
 
-  // Password form
-  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
-    resolver: zodResolver(passwordFormSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-
   // Update email mutation
   const updateEmailMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -123,46 +97,6 @@ export function AccountSettingsForm({ profile }: AccountSettingsFormProps) {
       toast({
         title: "Error",
         description: error.message || "Failed to update email",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update password mutation
-  const updatePasswordMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof passwordFormSchema>) => {
-      // First verify the current password
-      if (!userEmail) {
-        throw new Error("User email not found. Please try again later.");
-      }
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userEmail,
-        password: values.currentPassword,
-      });
-
-      if (signInError) throw new Error("Current password is incorrect");
-
-      // Then update the password
-      const { error } = await supabase.auth.updateUser({
-        password: values.newPassword,
-      });
-
-      if (error) throw error;
-      return true;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully.",
-      });
-      setShowPasswordForm(false);
-      passwordForm.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update password",
         variant: "destructive",
       });
     },
@@ -239,10 +173,6 @@ export function AccountSettingsForm({ profile }: AccountSettingsFormProps) {
     updateEmailMutation.mutate(values);
   };
 
-  const onPasswordSubmit = (values: z.infer<typeof passwordFormSchema>) => {
-    updatePasswordMutation.mutate(values);
-  };
-
   const handleDeleteAccount = () => {
     if (deleteConfirmText.toLowerCase() !== "delete my account") {
       toast({
@@ -301,101 +231,9 @@ export function AccountSettingsForm({ profile }: AccountSettingsFormProps) {
       </div>
 
       <div>
-        <h3 className="text-lg font-medium">Password</h3>
-        <p className="text-sm text-muted-foreground">
-          Change your password to keep your account secure.
-        </p>
-
-        {!showPasswordForm ? (
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => setShowPasswordForm(true)}
-          >
-            Change Password
-          </Button>
-        ) : (
-          <Form {...passwordForm}>
-            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="mt-4 space-y-4">
-              <FormField
-                control={passwordForm.control}
-                name="currentPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={passwordForm.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>New Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Password must be at least 8 characters and include uppercase, lowercase, and numbers.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={passwordForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm New Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex space-x-2">
-                <Button
-                  type="submit"
-                  disabled={updatePasswordMutation.isPending}
-                >
-                  {updatePasswordMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Password"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowPasswordForm(false);
-                    passwordForm.reset();
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Form>
-        )}
-      </div>
-
-      <div>
         <h3 className="text-lg font-medium">Delete Account</h3>
         <p className="text-sm text-muted-foreground">
-          Permanently delete your account and all of your content.
+          Permanently delete your account and all associated data.
         </p>
 
         <Alert variant="destructive" className="mt-4">
