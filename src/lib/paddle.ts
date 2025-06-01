@@ -12,17 +12,25 @@ export async function initPaddle() {
 
     console.log('Initializing Paddle with:', {
       environment,
-      token: token ? `${token.substring(0, 8)}...` : 'missing', // Log partial token for security
+      token: token ? `${token.substring(0, 8)}...` : 'missing',
       tokenLength: token?.length || 0
     });
 
     if (!token) {
-      throw new Error('Paddle client token is missing');
+      throw new Error('Paddle client token is missing. Please add VITE_PADDLE_CLIENT_TOKEN to your .env file');
     }
 
     paddleInstance = await initializePaddle({
       environment,
-      token
+      token,
+      checkout: {
+        settings: {
+          displayMode: 'overlay',
+          theme: 'light',
+          locale: 'en',
+          frameTarget: 'body'
+        }
+      }
     });
 
     // Test if paddleInstance has required properties
@@ -86,7 +94,8 @@ export async function openCheckout(priceId: string) {
         displayMode: 'overlay',
         theme: 'light',
         locale: 'en',
-        successUrl: window.location.origin + '/dashboard?checkout=success'
+        successUrl: window.location.origin + '/dashboard?checkout=success',
+        frameTarget: 'body'
       },
       customer: {
         email: user.email
