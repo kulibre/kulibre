@@ -29,7 +29,7 @@ export async function initPaddle() {
           displayMode: 'inline',
           theme: 'light',
           locale: 'en',
-          frameTarget: 'body',
+          frameTarget: '#paddle-checkout',
           allowLogout: false
         }
       }
@@ -53,7 +53,7 @@ export async function initPaddle() {
   }
 }
 
-export async function openCheckout(priceId: string) {
+export async function openCheckout(priceId: string, container: HTMLElement) {
   try {
     console.log('Opening checkout for price:', priceId);
     const paddle = await initPaddle();
@@ -90,6 +90,10 @@ export async function openCheckout(priceId: string) {
       throw new Error(`Invalid price ID format: ${priceId}`);
     }
 
+    // Show the container and add the ID
+    container.style.display = 'flex';
+    container.id = 'paddle-checkout';
+
     console.log('Attempting to open checkout with config:', {
       priceId,
       hasCheckout: !!paddle.Checkout,
@@ -108,7 +112,7 @@ export async function openCheckout(priceId: string) {
         theme: 'light',
         locale: 'en',
         successUrl: window.location.origin + '/dashboard?checkout=success',
-        frameTarget: 'body',
+        frameTarget: '#paddle-checkout',
         allowLogout: false
       },
       customer: {
@@ -116,6 +120,10 @@ export async function openCheckout(priceId: string) {
       }
     });
   } catch (error: any) {
+    // Hide the container on error
+    container.style.display = 'none';
+    container.id = '';
+
     console.error('Paddle checkout error:', {
       message: error.message,
       name: error.name,

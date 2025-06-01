@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { initPaddle, openCheckout, formatPrice, type SubscriptionPlan } from '@/lib/paddle';
@@ -54,6 +54,7 @@ export function SubscriptionPlans() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const checkoutContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize Paddle when component mounts
@@ -88,9 +89,13 @@ export function SubscriptionPlans() {
         return;
       }
 
+      if (!checkoutContainerRef.current) {
+        throw new Error('Checkout container not found');
+      }
+
       setIsLoading(true);
       console.log('Opening checkout for plan:', plan.priceId);
-      await openCheckout(plan.priceId);
+      await openCheckout(plan.priceId, checkoutContainerRef.current);
     } catch (error: any) {
       console.error('Error creating checkout:', error);
       if (error.message.includes('cookies')) {
@@ -166,6 +171,13 @@ export function SubscriptionPlans() {
             </Card>
           ))}
         </div>
+
+        {/* Checkout Container */}
+        <div 
+          ref={checkoutContainerRef}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          style={{ display: 'none' }}
+        />
       </div>
 
       <Dialog open={showCookieDialog} onOpenChange={setShowCookieDialog}>
