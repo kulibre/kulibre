@@ -6,17 +6,35 @@ export async function initPaddle() {
   if (paddleInstance) return paddleInstance;
   
   try {
+    const environment = import.meta.env.VITE_PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox';
+    const token = import.meta.env.VITE_PADDLE_CLIENT_TOKEN;
+
     console.log('Initializing Paddle with:', {
-      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT,
-      token: import.meta.env.VITE_PADDLE_CLIENT_TOKEN
+      environment,
+      token: token ? `${token.substring(0, 8)}...` : 'missing', // Log partial token for security
+      tokenLength: token?.length || 0
     });
+
+    if (!token) {
+      throw new Error('Paddle client token is missing');
+    }
 
     paddleInstance = await initializePaddle({
-      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
-      token: import.meta.env.VITE_PADDLE_CLIENT_TOKEN
+      environment,
+      token
     });
 
-    console.log('Paddle initialized successfully:', paddleInstance);
+    // Test if paddleInstance has required properties
+    if (!paddleInstance?.Checkout?.open) {
+      throw new Error('Paddle instance is missing required methods');
+    }
+
+    console.log('Paddle initialized successfully with capabilities:', {
+      hasCheckout: !!paddleInstance.Checkout,
+      hasOpen: !!paddleInstance.Checkout?.open,
+      environment: environment
+    });
+
     return paddleInstance;
   } catch (error) {
     console.error('Failed to initialize Paddle:', error);
@@ -42,25 +60,46 @@ export async function openCheckout(priceId: string) {
       throw new Error('Please enable third-party cookies to proceed with checkout');
     }
 
+    // Verify the price ID format
+    if (!priceId.startsWith('pri_')) {
+      throw new Error(`Invalid price ID format: ${priceId}`);
+    }
+
+    console.log('Attempting to open checkout with config:', {
+      priceId,
+      hasCheckout: !!paddle.Checkout,
+      hasOpen: !!paddle.Checkout?.open
+    });
+
     await paddle.Checkout.open({
       items: [{
         priceId,
         quantity: 1
       }],
       settings: {
-        displayMode: 'overlay', // This ensures better compatibility
+        displayMode: 'overlay',
         theme: 'light',
         locale: 'en',
-        successUrl: window.location.origin + '/dashboard?checkout=success',
-        closeOnSuccess: true,
+        successUrl: window.location.origin + '/dashboard?checkout=success'
       }
     });
   } catch (error: any) {
-    console.error('Paddle checkout error:', error);
+    console.error('Paddle checkout error:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      type: typeof error
+    });
+    
     if (error.message.includes('cookies')) {
-      // Show a more user-friendly error for cookie issues
       throw new Error('Please enable third-party cookies in your browser settings to complete the checkout process. This is required for secure payment processing.');
     }
+    
+    // Check for specific error types
+    if (error.message.includes('400')) {
+      throw new Error('The checkout request was invalid. This might be due to an incorrect price ID or configuration.');
+    }
+    
     throw error;
   }
 }
@@ -73,7 +112,8 @@ export function formatPrice(amount: number, currency: string = 'USD'): string {
 }
 
 export interface SubscriptionPlan {
-  id: string;
+  id: string; // Product ID (pro_*)
+  priceId: string; // Price ID (pri_*)
   name: string;
   description: string;
   price: number;

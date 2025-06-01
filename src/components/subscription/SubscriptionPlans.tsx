@@ -9,7 +9,8 @@ import { useAuth } from '@/lib/auth';
 // Subscription plans with actual Paddle IDs
 const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
   {
-    id: 'pri_01jwnghvbx7wfmcj68p9x80t97', // Basic plan ID
+    id: 'pro_01jwngeyvwgs9xn78rsh84d3dk', // Basic plan product ID
+    priceId: 'pri_01jwnghvbx7wfmcj68p9x80t97', // Basic plan price ID
     name: 'Basic Plan',
     description: 'Perfect for individuals and small teams',
     price: 900, // $9.00
@@ -22,7 +23,8 @@ const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     ]
   },
   {
-    id: 'pri_01jwngk6r77jrkx90eqbpz4y2n', // Pro plan ID
+    id: 'pro_01jwngje6pjk7dw7svb0dhas7e', // Pro plan product ID
+    priceId: 'pri_01jwngk6r77jrkx90eqbpz4y2n', // Pro plan price ID
     name: 'Pro Plan',
     description: 'For growing teams with advanced needs',
     price: 2900, // $29.00
@@ -72,7 +74,7 @@ export function SubscriptionPlans() {
       // Check if user is authenticated
       if (!user) {
         console.log('User not authenticated, storing plan and redirecting'); // Debug log
-        sessionStorage.setItem('selectedPlan', plan.id);
+        sessionStorage.setItem('selectedPlan', plan.priceId); // Store price ID instead of product ID
         // Store the current location to return after login
         sessionStorage.setItem('returnTo', location.pathname);
         navigate('/login');
@@ -80,8 +82,8 @@ export function SubscriptionPlans() {
       }
 
       setIsLoading(true);
-      console.log('Opening checkout for plan:', plan.id); // Debug log
-      await openCheckout(plan.id);
+      console.log('Opening checkout for plan:', plan.priceId); // Debug log
+      await openCheckout(plan.priceId);
     } catch (error: any) {
       console.error('Error creating checkout:', error);
       toast({
