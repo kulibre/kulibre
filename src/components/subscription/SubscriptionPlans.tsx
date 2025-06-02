@@ -172,12 +172,17 @@ export function SubscriptionPlans() {
           ))}
         </div>
 
-        {/* Checkout Container */}
+        {/* Modify the Checkout Container */}
         <div 
           ref={checkoutContainerRef}
+          id="paddle-checkout"
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           style={{ display: 'none' }}
-        />
+        >
+          <div className="bg-white p-4 rounded-lg">
+            <div className="w-full h-full min-h-[500px]" />
+          </div>
+        </div>
       </div>
 
       <Dialog open={showCookieDialog} onOpenChange={setShowCookieDialog}>

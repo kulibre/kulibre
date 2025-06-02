@@ -63,42 +63,27 @@ export async function openCheckout(priceId: string, container: HTMLElement) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Get user's location for currency detection
-    try {
-      const response = await fetch('https://api.ipapi.com/api/check?access_key=YOUR_IPAPI_KEY');
-      const data = await response.json();
-      const userCurrency = data.currency || 'USD'; // Default to USD if detection fails
-      console.log('Detected user currency:', userCurrency);
-    } catch (error) {
-      console.warn('Failed to detect user currency:', error);
+    // Ensure the container is ready
+    if (!container || !document.body.contains(container)) {
+      throw new Error('Checkout container is not in the document');
     }
 
-    // Check if third-party cookies are enabled
-    try {
-      const testCookie = 'paddlejs_cookies_check=1';
-      document.cookie = testCookie;
-      const cookiesEnabled = document.cookie.indexOf(testCookie) !== -1;
-      if (!cookiesEnabled) {
-        throw new Error('Third-party cookies are required for checkout');
-      }
-    } catch (cookieError) {
-      throw new Error('Please enable third-party cookies to proceed with checkout');
-    }
-
-    // Verify the price ID format
-    if (!priceId.startsWith('pri_')) {
-      throw new Error(`Invalid price ID format: ${priceId}`);
-    }
-
-    // Show the container and add the ID
+    // Show the container
     container.style.display = 'flex';
-    container.id = 'paddle-checkout';
+
+    // Ensure the target element exists
+    const checkoutElement = document.getElementById('paddle-checkout');
+    if (!checkoutElement) {
+      throw new Error('Checkout element not found');
+    }
 
     console.log('Attempting to open checkout with config:', {
       priceId,
       hasCheckout: !!paddle.Checkout,
       hasOpen: !!paddle.Checkout?.open,
-      customerEmail: user.email
+      customerEmail: user.email,
+      containerReady: !!container,
+      checkoutElementReady: !!checkoutElement
     });
 
     // Open checkout with MCP configuration
@@ -121,8 +106,9 @@ export async function openCheckout(priceId: string, container: HTMLElement) {
     });
   } catch (error: any) {
     // Hide the container on error
-    container.style.display = 'none';
-    container.id = '';
+    if (container) {
+      container.style.display = 'none';
+    }
 
     console.error('Paddle checkout error:', {
       message: error.message,
